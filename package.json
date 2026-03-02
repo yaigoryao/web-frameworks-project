@@ -1,0 +1,22 @@
+{
+  "name": "web-monorepo",
+  "private": true,
+  "workspaces": [
+    "user-service",
+    "data-service",
+    "shared"
+  ],
+  "scripts": {
+    "dev:user": "npm run --workspace=user-service dev",
+    "dev:data": "npm run --workspace=data-service dev",
+    "start:user": "npm run --workspace=user-service start",
+    "start:data": "npm run --workspace=data-service start",
+    "build:shared": "npm run --workspace=shared build",
+    "build:user": "npm run --workspace=user-service build",
+    "build:data": "npm run --workspace=data-service build",
+    "build": "npm run build:shared && npm run build:user && npm run build:data",
+    "watch:shared": "npm run --workspace=shared -- tsc -p tsconfig.json --watch",
+    "watch:all": "concurrently \"npm run watch:shared\" \"npm run dev:user\" \"npm run dev:data\"",
+    "dev": "concurrently \"npm run dev:user\" \"npm run dev:data\""
+  }
+}
