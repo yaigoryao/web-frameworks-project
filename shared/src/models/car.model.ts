@@ -23,6 +23,6 @@ export class Car extends Model<Car> {
   @HasMany(() => Order, 'carId')
   declare orders: Order[];
 
-  @BelongsToMany(() => User, () => UserCar)
+  @BelongsToMany(() => User, { through: () => UserCar })
   declare users: User[];
 }

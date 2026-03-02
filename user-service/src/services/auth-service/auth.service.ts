@@ -45,7 +45,7 @@ export class AuthService {
 
         const { login } = jwt.decode(accessToken) as IUserJwtData;
 
-        let user: User | null = (await User.findOne({
+        let user: User | null = (await this.userModel.findOne({
             where: {
                 login: login
             }
@@ -63,7 +63,7 @@ export class AuthService {
 
     public async register(registerRequest: IRegisterRequest): Promise<IRegisterResponse> {
 
-        let users = await User.findAll({
+        let users = await this.userModel.findAll({
             where: {
                 login: registerRequest.login
             }
@@ -100,9 +100,9 @@ export class AuthService {
     private async refreshUserTokens(user: User): Promise<IRefreshResponse> {
         user.refreshToken = crypto.randomUUID();
         await user.save();
-
+        const temp_tkn = this.configService.get('JWT_SECRET');
         return {
-            accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_PRIVATE_KEY')!, AuthService.jwtOptions),
+            accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
             refreshToken: user.refreshToken
         };
     }

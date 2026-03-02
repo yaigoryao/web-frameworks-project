@@ -31,7 +31,7 @@ export class User extends Model<User> {
   declare surname: string;
 
   @Column({ type: DataType.STRING, allowNull: true })
-  declare patronymic: string;
+  declare patronymic: string | null;
 
   @Column({ type: DataType.STRING, allowNull: false })
   declare phoneNumber: string;
@@ -43,7 +43,7 @@ export class User extends Model<User> {
   @BelongsTo(() => Role, 'roleId')
   declare role: Role;
 
-  @BelongsToMany(() => Car, () => UserCar)
+  @BelongsToMany(() => Car, { through: () => UserCar } )
   declare cars: Car[];
 
   @HasMany(() => Order, 'userId')

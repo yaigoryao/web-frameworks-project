@@ -7,6 +7,8 @@ import  { ConfigModule, ConfigService } from '@nestjs/config';
 import { Dialect } from 'sequelize';
 import { LoginController } from './controllers/login/login.controller';
 import { AuthService } from './services/auth-service/auth.service';
+import { RegisterController } from './controllers/register/register.controller';
+import { RefreshController } from './controllers/refresh/refresh.controller';
 
 @Module({
   imports: [
@@ -27,7 +29,7 @@ import { AuthService } from './services/auth-service/auth.service';
     })}),
     SequelizeModule.forFeature([User, Role, UserCar, Car, Order, OrderStatus])
   ],
-  controllers: [AppController, LoginController],
+  controllers: [AppController, LoginController, RegisterController, RefreshController],
   providers: [AppService, AuthService]
 })
 export class AppModule {}
