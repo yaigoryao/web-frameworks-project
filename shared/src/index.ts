@@ -1,5 +1,10 @@
 // Models
 export * from './models/user.model';
+export * from './models/role.model';
+export * from './models/car.model';
+export * from './models/user-car.model';
+export * from './models/order.model';
+export * from './models/order-status.model';
 
 // Contracts (DTOs, Interfaces)
 export * from './contracts/dto/example.dto';
