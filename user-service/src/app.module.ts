@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { User } from '@monorepo/shared';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { User } from './models/user.model';
 
 @Module({
   imports: [

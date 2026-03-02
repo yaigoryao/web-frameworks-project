@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { User } from '@monorepo/shared';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DataModel } from './models/data.model';
@@ -14,11 +15,11 @@ import { DataModel } from './models/data.model';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME || 'data_db',
-      models: [DataModel],
+      models: [User, DataModel],
       autoLoadModels: true,
       synchronize: true
     }),
-    SequelizeModule.forFeature([DataModel])
+    SequelizeModule.forFeature([User, DataModel])
   ],
   controllers: [AppController],
   providers: [AppService]
