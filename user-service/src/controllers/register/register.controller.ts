@@ -1,3 +1,4 @@
+import { splitErrorMessage } from '@monorepo/shared/common/utils/error.utils';
 import { IError } from '@monorepo/shared/contracts/dto/error.dto';
 import { Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
@@ -16,7 +17,7 @@ export class RegisterController {
         }
         catch(error: unknown) {
             if (error instanceof Error) {
-                return { error: [error.message] } satisfies IError;
+                return { error: splitErrorMessage(error) } satisfies IError;
             }
             return { error: ['Ошибка регистрации'] } satisfies IError;
         }

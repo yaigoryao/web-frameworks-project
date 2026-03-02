@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { ILoginRequest } from 'user-service/src/services/auth-service/models/login.request';
 import { IError } from '@monorepo/shared/contracts/dto/error.dto';
 import { error } from 'console';
+import { splitErrorMessage } from '@monorepo/shared';
 @Controller('login')
 export class LoginController {
     constructor(private readonly authService: AuthService) { 
@@ -19,7 +20,7 @@ export class LoginController {
         }
         catch (error: unknown) {
             if (error instanceof Error) {
-                return { error: [error.message] } satisfies IError;
+                return { error: splitErrorMessage(error) } satisfies IError;
             }
             return { error: ['Ошибка входа в аккаунт'] } satisfies IError;
         }

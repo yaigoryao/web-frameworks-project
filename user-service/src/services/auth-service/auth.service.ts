@@ -1,4 +1,4 @@
-import { Role, User } from '@monorepo/shared';
+import { ErrorBuilder, Role, User } from '@monorepo/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import bcrypt from 'bcrypt';
@@ -24,23 +24,29 @@ export class AuthService {
     }
 
     public async login(loginRequest: ILoginRequest): Promise<ILoginResponse> {
+        const errBuilder = new ErrorBuilder();
+
         const { login, password } = loginRequest;
         const user: User | null = (await this.userModel.findOne({
             where: {
                 login: login
             }
         })) ?? null;
-        if (user === null) throw new Error('Пользователь не найден');
+        if (user === null) errBuilder.addErrorMessage('Пользователь не найден');
 
         let passwordMatch = await bcrypt.compare(`${password}${user!.salt}`, user!.password);
 
-        if (!passwordMatch) throw new Error('Неверный пароль');
+        if (!passwordMatch) errBuilder.addErrorMessage('Неверный пароль');
 
-        const tokens = await this.refreshUserTokens(user);
+        if (errBuilder.hasErrors()) throw errBuilder.build();
+
+        const tokens = await this.refreshUserTokens(user!, errBuilder);
         return tokens satisfies ILoginResponse;
     }
 
     public async refresh(refreshRequest: IRefreshRequest): Promise<IRefreshResponse> {
+        const errBuilder = new ErrorBuilder();
+
         const { accessToken, refreshToken } = refreshRequest
 
         const { login } = jwt.decode(accessToken) as IUserJwtData;
@@ -51,17 +57,20 @@ export class AuthService {
             }
         })) ?? null;
 
-        if (user === null) throw Error('Пользователь не найден');
+        if (user === null) errBuilder.addErrorMessage('Пользователь не найден');
 
-        if (user.refreshToken !== refreshToken) throw Error('Неверный refresh token');
+        if (user!.refreshToken !== refreshToken) errBuilder.addErrorMessage('Неверный refresh token');
 
-        const tokens = await this.refreshUserTokens(user);
+        const tokens = await this.refreshUserTokens(user!, errBuilder);
 
+        if (errBuilder.hasErrors()) throw errBuilder.build();
         return tokens satisfies IRefreshResponse;
 
     }
 
     public async register(registerRequest: IRegisterRequest): Promise<IRegisterResponse> {
+
+        const errBuilder = new ErrorBuilder();
 
         let users = await this.userModel.findAll({
             where: {
@@ -69,7 +78,7 @@ export class AuthService {
             }
         });
 
-        if (users.length > 0) throw Error('Пользователь с таким логином уже существует');
+        if (users.length > 0) errBuilder.addErrorMessage('Пользователь с таким логином уже существует');
         
 
         let userRole = await this.roleModel.findOne({ where: {
@@ -81,29 +90,52 @@ export class AuthService {
             await userRole.save();
         }
 
-        const salt = crypto.randomUUID();
-        const user = await this.userModel.create({
-            login: registerRequest.login,
-            name: registerRequest.name,
-            surname: registerRequest.surname,
-            patronymic: registerRequest.patronymic ?? null,
-            phoneNumber: registerRequest.phoneNumber,
-            password: await bcrypt.hash(`${registerRequest.password}${salt}`, 10),
-            salt: salt,
-            refreshToken: crypto.randomUUID(),
-            roleId: userRole!.id
-        } as User);
+        let salt: string = "";
+        let user: User | null = null;
 
-        return { login: user.login } satisfies IRegisterResponse;
+        try {
+            salt = crypto.randomUUID();
+            user = await this.userModel.create({
+                login: registerRequest.login,
+                name: registerRequest.name,
+                surname: registerRequest.surname,
+                patronymic: registerRequest.patronymic ?? null,
+                phoneNumber: registerRequest.phoneNumber,
+                password: await bcrypt.hash(`${registerRequest.password}${salt}`, 10),
+                salt: salt,
+                refreshToken: crypto.randomUUID(),
+                roleId: userRole!.id
+            } as User);
+        }
+        catch (error: unknown) {
+            if (error instanceof Error) {
+                errBuilder.addErrorMessage(error.message);
+            }
+        }
+
+        if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
+        
+        if (errBuilder.hasErrors()) throw errBuilder.build();
+        return { login: user!.login } satisfies IRegisterResponse;
     }
 
-    private async refreshUserTokens(user: User): Promise<IRefreshResponse> {
-        user.refreshToken = crypto.randomUUID();
-        await user.save();
-        const temp_tkn = this.configService.get('JWT_SECRET');
-        return {
-            accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
-            refreshToken: user.refreshToken
-        };
+    private async refreshUserTokens(user: User, errBuilder: ErrorBuilder): Promise<IRefreshResponse> {
+        try {
+            user.refreshToken = crypto.randomUUID();
+            await user.save();
+            const temp_tkn = this.configService.get('JWT_SECRET');
+            return {
+                accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
+                refreshToken: user.refreshToken
+            };
+        }
+        catch(error: unknown) {
+            if (error instanceof Error) {
+                errBuilder.addErrorMessage(error.message);
+            }
+            else errBuilder.addErrorMessage('Ошибка генерации токенов');
+
+            throw errBuilder.build();
+        }
     }
 }

@@ -3,6 +3,7 @@ import { Controller, Get, Req } from '@nestjs/common';
 import { AuthService } from 'user-service/src/services/auth-service/auth.service';
 import { IRefreshRequest } from 'user-service/src/services/auth-service/models/refresh.request';
 import { Request } from 'express';
+import { splitErrorMessage } from '@monorepo/shared/common/utils/error.utils';
 
 @Controller('refresh')
 export class RefreshController {
@@ -17,7 +18,7 @@ export class RefreshController {
             }
             catch(error: unknown) {
                 if (error instanceof Error) {
-                    return { error: [error.message] } satisfies IError;
+                    return { error: splitErrorMessage(error) } satisfies IError;
                 }
                 return { error: ['Ошибка обновления токенов'] } satisfies IError;
             }
