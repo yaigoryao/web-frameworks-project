@@ -17,6 +17,12 @@ export class User extends Model<User> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   declare password: string;
+ 
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare salt: string;
+  
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare refreshToken: string;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare isActive: boolean;
@@ -24,7 +30,7 @@ export class User extends Model<User> {
   @Column({ type: DataType.STRING, allowNull: false })
   declare surname: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: true })
   declare patronymic: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
