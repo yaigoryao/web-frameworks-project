@@ -11,13 +11,15 @@ import { IRefreshRequest } from './models/refresh.request';
 import { IUserJwtData } from '@monorepo/shared/contracts/dto/user-jwt-data.dto';
 import { IRegisterResponse } from './models/register.response';
 import { IRegisterRequest } from './models/register.request';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 
 @Injectable()
 export class AuthService {
     static readonly jwtOptions = { expiresIn: '2m', algorithm: 'RS256' } satisfies jwt.SignOptions;
 
     constructor(@InjectModel(User) private readonly userModel: typeof User,
-                @InjectModel(Role) private readonly roleModel: typeof Role) {
+                @InjectModel(Role) private readonly roleModel: typeof Role,
+                private configService: ConfigService) {
 
     }
 
@@ -70,9 +72,14 @@ export class AuthService {
         if (users.length > 0) throw Error('Пользователь с таким логином уже существует');
         
 
-        const userRole = await this.roleModel.findOne({ where: {
+        let userRole = await this.roleModel.findOne({ where: {
             roleName: "user"
         } });
+
+        if (userRole === null) {
+            userRole = await this.roleModel.create({ roleName: "user" } as Role);
+            await userRole.save();
+        }
 
         const salt = crypto.randomUUID();
         const user = await this.userModel.create({
@@ -95,7 +102,7 @@ export class AuthService {
         await user.save();
 
         return {
-            accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, process.env.PRIVATE_KEY! as string, AuthService.jwtOptions),
+            accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_PRIVATE_KEY')!, AuthService.jwtOptions),
             refreshToken: user.refreshToken
         };
     }

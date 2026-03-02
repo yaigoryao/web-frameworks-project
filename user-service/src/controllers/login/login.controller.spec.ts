@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoginController } from './login.controller';
-import { beforeEach, describe, it, } from 'node:test';
 
 describe('LoginController', () => {
   let controller: LoginController;
@@ -14,6 +13,6 @@ describe('LoginController', () => {
   });
 
   it('should be defined', () => {
-    //expect(controller).toBeDefined();
+    expect(controller).toBeDefined();
   });
 });
