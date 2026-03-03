@@ -1,7 +1,7 @@
-export interface ICarDto {
-    id: number;
-    carNumber: string;
-    modelName: string;
-    vin: string;
-    color: string;
+export class CarDto {
+    declare id: number;
+    declare carNumber: string;
+    declare modelName: string;
+    declare vin: string;
+    declare color: string;
 }

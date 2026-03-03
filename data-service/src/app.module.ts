@@ -3,7 +3,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '@monorepo/shared';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DataModel } from './models/data.model';
+import { MapperService } from './services/mapper-service/mapper.service';
+import { UserMapper } from './services/mapper-service/mapper-handlers/user.mapper'
+//import { DataModel } from './models/data.model';
+
+export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
 
 @Module({
   imports: [
@@ -15,13 +19,18 @@ import { DataModel } from './models/data.model';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME || 'data_db',
-      models: [User, DataModel],
+      models: [User],
       autoLoadModels: true,
       synchronize: true
     }),
-    SequelizeModule.forFeature([User, DataModel])
+    SequelizeModule.forFeature([User])
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService, MapperService, UserMapper, {
+    provide: MAPPERS_TOKEN,
+    useFactory: (...mappers) => mappers,
+    inject: [UserMapper],
+  },
+  ]
 })
-export class AppModule {}
+export class AppModule { }

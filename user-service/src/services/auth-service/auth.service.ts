@@ -8,7 +8,7 @@ import { IRefreshResponse } from './models/refresh.response';
 import { ILoginResponse } from './models/login.response';
 import { ILoginRequest } from './models/login.request';
 import { IRefreshRequest } from './models/refresh.request';
-import { IUserJwtData } from '@monorepo/shared/contracts/dto/user-jwt-data.dto';
+import { UserJwtData } from '@monorepo/shared/contracts/dto/user-jwt-data.dto';
 import { IRegisterResponse } from './models/register.response';
 import { IRegisterRequest } from './models/register.request';
 import { ConfigService } from '@nestjs/config/dist/config.service';
@@ -18,8 +18,8 @@ export class AuthService {
     static readonly jwtOptions = { expiresIn: '2m', algorithm: 'RS256' } satisfies jwt.SignOptions;
 
     constructor(@InjectModel(User) private readonly userModel: typeof User,
-                @InjectModel(Role) private readonly roleModel: typeof Role,
-                private configService: ConfigService) {
+        @InjectModel(Role) private readonly roleModel: typeof Role,
+        private configService: ConfigService) {
 
     }
 
@@ -49,7 +49,7 @@ export class AuthService {
 
         const { accessToken, refreshToken } = refreshRequest
 
-        const { login } = jwt.decode(accessToken) as IUserJwtData;
+        const { login } = jwt.decode(accessToken) as UserJwtData;
 
         let user: User | null = (await this.userModel.findOne({
             where: {
@@ -79,11 +79,13 @@ export class AuthService {
         });
 
         if (users.length > 0) errBuilder.addErrorMessage('Пользователь с таким логином уже существует');
-        
 
-        let userRole = await this.roleModel.findOne({ where: {
-            roleName: "user"
-        } });
+
+        let userRole = await this.roleModel.findOne({
+            where: {
+                roleName: "user"
+            }
+        });
 
         if (userRole === null) {
             userRole = await this.roleModel.create({ roleName: "user" } as Role);
@@ -114,7 +116,7 @@ export class AuthService {
         }
 
         if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
-        
+
         if (errBuilder.hasErrors()) throw errBuilder.build();
         return { login: user!.login } satisfies IRegisterResponse;
     }
@@ -125,11 +127,11 @@ export class AuthService {
             await user.save();
             const temp_tkn = this.configService.get('JWT_SECRET');
             return {
-                accessToken: jwt.sign({ login: user!.login } satisfies IUserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
+                accessToken: jwt.sign({ login: user!.login } as UserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
                 refreshToken: user.refreshToken
             };
         }
-        catch(error: unknown) {
+        catch (error: unknown) {
             if (error instanceof Error) {
                 errBuilder.addErrorMessage(error.message);
             }

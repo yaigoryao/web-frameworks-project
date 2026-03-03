@@ -1,4 +1,5 @@
-export interface IRoleDto {
-    id: number;
-    roleName: string;
+export class RoleDto {
+    declare id: number;
+    declare roleName: string;
+    declare description: string;
 }

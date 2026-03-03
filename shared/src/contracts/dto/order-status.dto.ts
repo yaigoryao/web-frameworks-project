@@ -1,4 +1,4 @@
-export interface IOrderStatusDto {
-    id: number;
-    orderStatusName: string;
+export class OrderStatusDto {
+    declare id: number;
+    declare orderStatusName: string;
 }

@@ -1,4 +1,3 @@
-export interface IUserJwtData
-{
-    login: string
+export class UserJwtData {
+    declare login: string
 }

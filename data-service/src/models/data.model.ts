@@ -1,10 +1,10 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+// import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-@Table({ tableName: 'data' })
-export class DataModel extends Model<DataModel> {
-  @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
-  declare id: number;
+// @Table({ tableName: 'data' })
+// export class DataModel extends Model<DataModel> {
+//   @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
+//   declare id: number;
 
-  @Column({ type: DataType.STRING })
-  declare value: string;
-}
+//   @Column({ type: DataType.STRING })
+//   declare value: string;
+// }

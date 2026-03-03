@@ -1,16 +1,16 @@
-import { ICarDto } from "./car.dto";
-import { IOrderDto } from "./order.dto";
-import { IRoleDto } from "./role.dto";
+import { CarDto } from "./car.dto";
+import { OrderDto } from "./order.dto";
+import { RoleDto } from "./role.dto";
 
-export interface IUserDto {
-    id: number;
-    name: string;
-    surname: string;
-    patronymic: string;
-    isActive: boolean;
-    phoneNumber: string;
-    roleId: number;
-    role: IRoleDto;
-    cars: ICarDto[];
-    orders: IOrderDto[];
+export class IUserDto {
+    declare id: number;
+    declare name: string;
+    declare surname: string;
+    declare patronymic: string;
+    declare isActive: boolean;
+    declare phoneNumber: string;
+    declare roleId: number;
+    declare role: RoleDto;
+    declare cars: CarDto[];
+    declare orders: OrderDto[];
 }
