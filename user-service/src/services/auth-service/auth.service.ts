@@ -1,5 +1,5 @@
 import { ErrorBuilder, Role, User } from '@monorepo/shared';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -24,7 +24,7 @@ export class AuthService {
     }
 
     public async login(loginRequest: ILoginRequest): Promise<ILoginResponse> {
-        const errBuilder = new ErrorBuilder();
+        //const errBuilder = new ErrorBuilder();
 
         const { login, password } = loginRequest;
         const user: User | null = (await this.userModel.findOne({
@@ -32,20 +32,21 @@ export class AuthService {
                 login: login
             }
         })) ?? null;
-        if (user === null) errBuilder.addErrorMessage('Пользователь не найден');
+
+        if (user === null) throw new NotFoundException("Пользователь не найден");//errBuilder.addErrorMessage('Пользователь не найден');
 
         let passwordMatch = await bcrypt.compare(`${password}${user!.salt}`, user!.password);
 
-        if (!passwordMatch) errBuilder.addErrorMessage('Неверный пароль');
+        if (!passwordMatch) throw new UnauthorizedException("Неверный пароль и/или логин!");//errBuilder.addErrorMessage('Неверный пароль');
 
-        if (errBuilder.hasErrors()) throw errBuilder.build();
+        //if (errBuilder.hasErrors()) throw errBuilder.build();
 
-        const tokens = await this.refreshUserTokens(user!, errBuilder);
+        const tokens = await this.refreshUserTokens(user!);
         return tokens satisfies ILoginResponse;
     }
 
     public async refresh(refreshRequest: IRefreshRequest): Promise<IRefreshResponse> {
-        const errBuilder = new ErrorBuilder();
+        //const errBuilder = new ErrorBuilder();
 
         const { accessToken, refreshToken } = refreshRequest
 
@@ -57,13 +58,14 @@ export class AuthService {
             }
         })) ?? null;
 
-        if (user === null) errBuilder.addErrorMessage('Пользователь не найден');
+        if (user === null) throw new NotFoundException("Пользователь не найден!");//errBuilder.addErrorMessage('Пользователь не найден');
 
-        if (user!.refreshToken !== refreshToken) errBuilder.addErrorMessage('Неверный refresh token');
+        if (user!.refreshToken !== refreshToken) throw new UnauthorizedException("Неверный refresh token");
+        //")// errBuilder.addErrorMessage('Неверный refresh token');
 
-        const tokens = await this.refreshUserTokens(user!, errBuilder);
+        const tokens = await this.refreshUserTokens(user!);
 
-        if (errBuilder.hasErrors()) throw errBuilder.build();
+        //if (errBuilder.hasErrors()) throw errBuilder.build();
         return tokens satisfies IRefreshResponse;
 
     }
@@ -121,23 +123,21 @@ export class AuthService {
         return { login: user!.login } satisfies IRegisterResponse;
     }
 
-    private async refreshUserTokens(user: User, errBuilder: ErrorBuilder): Promise<IRefreshResponse> {
+    private async refreshUserTokens(user: User): Promise<IRefreshResponse> {
         try {
             user.refreshToken = crypto.randomUUID();
             await user.save();
-            const temp_tkn = this.configService.get('JWT_SECRET');
+
+            let private_key = this.configService.get<string>('JWT_SECRET')!;
+            //private_key = private_key.replace(/\\n/g, '\n');
+
             return {
-                accessToken: jwt.sign({ login: user!.login } as UserJwtData, this.configService.get('JWT_SECRET')!, AuthService.jwtOptions),
+                accessToken: jwt.sign({ login: user!.login } as UserJwtData, private_key, AuthService.jwtOptions),
                 refreshToken: user.refreshToken
             };
         }
         catch (error: unknown) {
-            if (error instanceof Error) {
-                errBuilder.addErrorMessage(error.message);
-            }
-            else errBuilder.addErrorMessage('Ошибка генерации токенов');
-
-            throw errBuilder.build();
+            throw new InternalServerErrorException("Ошибка генерации токенов");
         }
     }
 }

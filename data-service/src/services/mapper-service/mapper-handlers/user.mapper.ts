@@ -1,11 +1,11 @@
-import { Car, CarDto, OrderDto, RoleDto, IUser, IUserDto, Role, User, Order } from "@monorepo/shared";
+import { Car, CarDto, OrderDto, RoleDto, IUser, UserDto, Role, User, Order } from "@monorepo/shared";
 import { IDataMapper } from "./base.mapper";
 import { Injectable } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { MapperService } from "../mapper.service";
 
 @Injectable()
-export class UserMapper extends IDataMapper<User, IUserDto> {
+export class UserMapper extends IDataMapper<User, UserDto> {
     readonly entityConstructor = User;
 
     private mappingService: MapperService = null!;
@@ -18,7 +18,7 @@ export class UserMapper extends IDataMapper<User, IUserDto> {
         this.mappingService = this.moduleRef.get(MapperService, { strict: false });
     }
 
-    toDto(entity: User): IUserDto {
+    toDto(entity: User): UserDto {
         const dto = {
             id: entity.id,
             name: entity.name,
@@ -30,7 +30,7 @@ export class UserMapper extends IDataMapper<User, IUserDto> {
             role: this.mappingService.toDto<Role, RoleDto>(entity.role),
             cars: entity.cars.map(car => this.mappingService.toDto<Car, CarDto>(car)),
             orders: entity.orders.map(order => this.mappingService.toDto<Order, OrderDto>(order)),
-        } as IUserDto;
+        } as UserDto;
         return dto;
     }
 }

@@ -1,4 +1,4 @@
-import { Car, CarDto, OrderDto, RoleDto, IUser, IUserDto, Role, User, Order, OrderStatus, OrderStatusDto } from "@monorepo/shared";
+import { Car, CarDto, OrderDto, RoleDto, IUser, UserDto, Role, User, Order, OrderStatus, OrderStatusDto } from "@monorepo/shared";
 import { IDataMapper } from "./base.mapper";
 import { Injectable } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";

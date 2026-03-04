@@ -2,7 +2,7 @@ import { CarDto } from "./car.dto";
 import { OrderDto } from "./order.dto";
 import { RoleDto } from "./role.dto";
 
-export class IUserDto {
+export class UserDto {
     declare id: number;
     declare name: string;
     declare surname: string;

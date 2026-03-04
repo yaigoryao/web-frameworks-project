@@ -1,3 +1,3 @@
 export interface IGetUserInfoRequest {
-    id: number;
+    login: string;
 }

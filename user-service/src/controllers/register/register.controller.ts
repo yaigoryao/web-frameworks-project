@@ -1,8 +1,8 @@
-import { splitErrorMessage } from '@monorepo/shared/common/utils/error.utils';
-import { IError } from '@monorepo/shared/contracts/dto/error.dto';
+import { splitErrorMessage } from '@monorepo/shared';
+import { IError } from '@monorepo/shared';
 import { Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthService } from 'user-service/src/services/auth-service/auth.service';
+import { AuthService } from '../../services/auth-service/auth.service';
 
 @Controller('register')
 export class RegisterController {
@@ -15,7 +15,7 @@ export class RegisterController {
         try {
             return await this.authService.register(registerRequest.body);
         }
-        catch(error: unknown) {
+        catch (error: unknown) {
             if (error instanceof Error) {
                 return { error: splitErrorMessage(error) } satisfies IError;
             }
