@@ -21,7 +21,7 @@ export class UserRepository {
     constructor(
         @InjectModel(User) private readonly userRepository: typeof User) { }
 
-    async getUserById(query: GetUserQuery): Promise<User | null> {
+    async getUser(query: GetUserQuery): Promise<User | null> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.login = query.id;

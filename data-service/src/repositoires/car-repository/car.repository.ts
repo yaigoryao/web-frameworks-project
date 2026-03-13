@@ -14,7 +14,7 @@ export class CarRepository {
     constructor(
         @InjectModel(Car) private readonly carRepository: typeof Car) { }
 
-    async getCarById(query: GetCarQuery): Promise<Car | null> {
+    async getCars(query: GetCarQuery): Promise<Car[] | null> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;
@@ -26,7 +26,7 @@ export class CarRepository {
             whereOptions.vin = query.vin;
         }
 
-        return this.carRepository.findOne({ where: whereOptions });
+        return this.carRepository.findAll({ where: whereOptions });
     }
 
     async updateCar(command: UpdateCarCommand): Promise<CarUpdateStatus> {

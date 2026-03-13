@@ -35,7 +35,7 @@ export class CustomerUserService {
     private async getUserByLogin(login: string | null): Promise<User | null> {
         return this.userModel.findOne({
             where: {
-                login: login
+                login: login ?? ""
             }
         });
     }
