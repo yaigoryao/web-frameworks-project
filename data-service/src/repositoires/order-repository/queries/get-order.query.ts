@@ -1,7 +1,13 @@
-class GetOrderQuery {
-    declare id: number;
-    declare startDate: Date | null;
-    declare endDate: Date | null;
-    declare orderStatusId: number | null;
-    declare userId: number | null;
+export class GetOrderQuery {
+    id: number = 0;
+    startDate: Date | null = null;
+    endDate: Date | null = null;
+    orderStatusId: number | null = null;
+    userId: number | null = null;
+    limit: number = 0;
+    offset: number = 0;
+
+    constructor(init?: Partial<GetOrderQuery>) {
+        Object.assign(this, init);
+    }
 }

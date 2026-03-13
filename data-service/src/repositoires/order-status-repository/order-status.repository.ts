@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Car, OrderStatus, Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
+import { GetOrderStatusQuery } from './queries/get-order-status.query';
+import { UpdateOrderStatusCommand } from './command/update-order-status.command';
 
 enum OrderStatusUpdateStatus {
     Success,

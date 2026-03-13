@@ -1,7 +1,11 @@
-class UpdateCarCommand {
-    declare id: number;
-    declare carNumber: string | null;
-    declare modelName: string | null;
-    declare vin: string | null;
-    declare color: string | null;
+export class UpdateCarCommand {
+    id: number = 0;
+    carNumber: string | null = null;
+    modelName: string | null = null;
+    vin: string | null = null;
+    color: string | null = null;
+
+    constructor(init?: Partial<UpdateCarCommand>) {
+        Object.assign(this, init);
+    }
 }

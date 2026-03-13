@@ -1,7 +1,11 @@
-class GetCarQuery {
-    declare id: number | null;
-    declare carNumber: string | null;
-    declare vin: string | null;
-    declare limit: number;
-    declare offset: number;
+export class GetCarQuery {
+    id: number | null = null;
+    carNumber: string | null = null;
+    vin: string | null = null;
+    limit: number = 0;
+    offset: number = 0;
+
+    constructor(init?: Partial<GetCarQuery>) {
+        Object.assign(this, init);
+    }
 }

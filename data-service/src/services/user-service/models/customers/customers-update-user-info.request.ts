@@ -1,8 +1,12 @@
-export interface ICustomerUpdateUserInfoRequest {
-    login: string;
-    name: string | null;
-    password: string | null;
-    surname: string | null;
-    patronymic: string | null;
-    phoneNumber: string | null;
+export class CustomerUpdateUserRequest {
+    login!: string;
+    name: string | null = null;
+    password: string | null = null;
+    surname: string | null = null;
+    patronymic: string | null = null;
+    phoneNumber: string | null = null;
+
+    constructor(init?: Partial<CustomerUpdateUserRequest>) {
+        Object.assign(this, init);
+    }
 }

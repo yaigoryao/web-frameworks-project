@@ -4,7 +4,10 @@ import { InjectModel } from "@nestjs/sequelize";
 //import { IGetUserInfoRequest } from "./models/get-user-info.request";
 import { MapperService } from "../../mapper-service/mapper.service";
 import { AuthorizationService } from "../../authorization-service/authorization.service";
-import { ICustomerUpdateUserInfoRequest } from "../models/customers/customers-update-user-info.request";
+import { CustomerUpdateUserRequest } from "../models/customers/customers-update-user-info.request";
+import { UserRepository, UserUpdateStatus } from "data-service/src/repositoires/user-repository/user.repository";
+import { GetUserQuery } from "data-service/src/repositoires/user-repository/queries/get-user.query";
+import { UpdateUserCommand } from "data-service/src/repositoires/user-repository/commands/update-user.command";
 //import { IUpdateUserInfoRequest } from "./models/update-user-info.request";
 
 @Injectable()
@@ -12,10 +15,10 @@ export class CustomerUserService {
     constructor(
         @InjectModel(User) private readonly userModel: typeof User,
         private readonly mapper: MapperService,
-        private readonly authorizationService: AuthorizationService) { }
+        private readonly userRepository: UserRepository) { }
 
     public async getUserInfo(login: string | null): Promise<UserDto> {
-        const user = await this.getUserByLogin(login);
+        const user = await this.userRepository.getUser(new GetUserQuery({ login: login }));
 
         if (!user) {
             throw new NotFoundException("Пользователь не найден");
@@ -24,20 +27,8 @@ export class CustomerUserService {
         return this.mapper.toDto<User, UserDto>(user);
     }
 
-    public async updateUser(updateInfoRequest: ICustomerUpdateUserInfoRequest, user: User | null): Promise<UserDto> {
-        if (!user) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-
-    }
-
-    private async getUserByLogin(login: string | null): Promise<User | null> {
-        return this.userModel.findOne({
-            where: {
-                login: login ?? ""
-            }
-        });
+    public async updateUser(updateInfoRequest: CustomerUpdateUserRequest): Promise<UserUpdateStatus> {
+        return await this.userRepository.updateUser(new UpdateUserCommand(updateInfoRequest));
     }
 }
 

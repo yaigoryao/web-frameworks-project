@@ -1,7 +1,11 @@
-class GetUserCarQuery {
-    declare userId: number | null;
-    declare carId: number | null;
-    declare ownsNow: boolean | null;
-    declare limit: number;
-    declare offset: number;
+export class GetUserCarQuery {
+    userId: number | null = null;
+    carId: number | null = null;
+    ownsNow: boolean | null = null;
+    limit: number = 0;
+    offset: number = 0;
+
+    constructor(init?: Partial<GetUserCarQuery>) {
+        Object.assign(this, init);
+    }
 }

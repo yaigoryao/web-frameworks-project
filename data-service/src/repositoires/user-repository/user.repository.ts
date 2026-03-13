@@ -3,14 +3,17 @@ import { InjectModel } from '@nestjs/sequelize';
 import { User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetUserQuery } from './queries/get-user.query';
+import { UpdateUserCarCommand } from '../user-car-repository/commands/update-user-car.command';
+import { UpdateUserCommand } from './commands/update-user.command';
+import { DeleteUserCommand } from './commands/delete-user.command';
 
-enum UserUpdateStatus {
+export enum UserUpdateStatus {
     Success,
     NotFound,
     Error
 }
 
-enum UserDeleteStatus {
+export enum UserDeleteStatus {
     Success,
     NotFound,
     Error
