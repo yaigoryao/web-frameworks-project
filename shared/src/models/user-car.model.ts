@@ -11,4 +11,7 @@ export class UserCar extends Model<UserCar> {
   @ForeignKey(() => Car)
   @Column({ type: DataType.INTEGER, primaryKey: true, allowNull: false })
   declare carId: number;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  declare ownsNow: boolean;
 }

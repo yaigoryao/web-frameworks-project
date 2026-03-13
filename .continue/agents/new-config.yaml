@@ -1,0 +1,13 @@
+name: Open router config
+version: 1.0.0
+schema: v1
+
+
+models:
+  - name: step-3.5-flash
+    provider: openrouter
+    model: stepfun/step-3.5-flash:free
+    apiBase: https://openrouter.ai/api/v1
+    apiKey: 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
+    
+

@@ -7,13 +7,14 @@ import { MapperService } from './services/mapper-service/mapper.service';
 import { UserMapper } from './services/mapper-service/mapper-handlers/user.mapper'
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserController } from './controllers/user/user.controller';
+import { CustomersUserController } from './controllers/user/user.controller';
 import { CarMapper } from './services/mapper-service/mapper-handlers/car.mapper';
 import { OrderMapper } from './services/mapper-service/mapper-handlers/order.mapper';
 import { OrderStatusMapper } from './services/mapper-service/mapper-handlers/order-status.mapper';
 import { RoleMapper } from './services/mapper-service/mapper-handlers/role.mapper';
-import { UserService } from './services/user-service/user.service';
+import { UserService } from './services/user-service/customers/customers-user-service';
 import { IDataMapper } from './services/mapper-service/mapper-handlers/base.mapper';
+import { AuthGuard } from './guards/auth-guard/auth.guard';
 //import { DataModel } from './models/data.model';
 
 export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
@@ -42,7 +43,7 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
       }),
     }),
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, CustomersUserController],
   providers: [AppService, MapperService,
     UserService, UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper,
     {
@@ -50,7 +51,7 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
       useFactory: (...mappers: IDataMapper<any, any>[]) => mappers,
       inject: [UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper],
     },
-
+    AuthGuard
   ],
   exports: [MAPPERS_TOKEN]
 })

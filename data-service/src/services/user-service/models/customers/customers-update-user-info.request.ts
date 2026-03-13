@@ -1,4 +1,4 @@
-export interface IGetUserInfoRequest {
+export interface ICustomerUpdateUserInfoRequest {
     login: string;
     name: string | null;
     password: string | null;

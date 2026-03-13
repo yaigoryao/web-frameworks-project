@@ -1,24 +1,40 @@
 import { IError, splitErrorMessage } from "@monorepo/shared";
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../../guards/auth-guard/auth.guard";
-import { IGetUserInfoRequest } from "../../services/user-service/models/get-user-info.request";
-import { UserService } from "../../services/user-service/user.service";
+//import { IGetUserInfoRequest } from "../../services/user-service/models/get-user-info.request";
+import { CustomerUserService } from "../../services/user-service/customers/customers-user-service";
 import { Request } from 'express';
+import { Constants } from "../../common/constants/constants";
 
 @Controller('user')
-export class UserController {
-    constructor(private readonly userService: UserService) {
+export class CustomersUserController {
+    constructor(private readonly customerUserService: CustomerUserService) {
     }
 
     @Get()
-    @UseGuards(AuthGuard)
+    //@UseGuards(AuthGuard)
     async getUserInfo(@Req() getUserInfoRequest: Request) {
         try {
-            return await this.userService.getUserInfo(getUserInfoRequest.body);
+            return await this.customerUserService.getUserInfo(getUserInfoRequest.login);//, getUserInfoRequest.user);
         }
         catch (error: unknown) {
             if (error instanceof Error) {
-                return { error: splitErrorMessage(error) } satisfies IError;
+                return { error: [error.message] } satisfies IError;
+            }
+            return { error: ['Ошибка регистрации'] } satisfies IError;
+        }
+    }
+
+    @Put()
+    //@UseGuards(AuthGuard)
+    async updateUserInfo(@Req() createUserRequest: Request) {
+        try {
+            return await this.customerUserService.();
+            //return await this.userService.getUserInfo();//, getUserInfoRequest.user);
+        }
+        catch (error: unknown) {
+            if (error instanceof Error) {
+                return { error: [error.message] } satisfies IError;
             }
             return { error: ['Ошибка регистрации'] } satisfies IError;
         }
