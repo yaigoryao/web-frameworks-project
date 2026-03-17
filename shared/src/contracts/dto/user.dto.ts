@@ -11,6 +11,6 @@ export class UserDto {
     declare phoneNumber: string;
     declare roleId: number;
     declare role: RoleDto;
-    declare cars: CarDto[];
-    declare orders: OrderDto[];
+    // declare cars: CarDto[];
+    // declare orders: OrderDto[];
 }

@@ -4,6 +4,7 @@ export class GetOrderQuery {
     endDate: Date | null = null;
     orderStatusId: number | null = null;
     userId: number | null = null;
+    userLogin: string | null = null;
     limit: number = 0;
     offset: number = 0;
 

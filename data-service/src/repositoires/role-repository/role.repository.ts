@@ -4,8 +4,14 @@ import { Car, Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetRoleQuery } from './queries/get-role.query';
 import { UpdateRoleCommand } from './commands/update-role.command';
+import { AddRoleCommand } from './commands/add-role.command';
 
-enum RoleUpdateStatus {
+export enum RoleAddStatus {
+    Success,
+    Error
+}
+
+export enum RoleUpdateStatus {
     Success,
     NotFound,
     Error
@@ -39,6 +45,19 @@ export class RoleRepository {
         }
         catch (error) {
             return RoleUpdateStatus.Error;
+        }
+    }
+
+    async addRole(command: AddRoleCommand): Promise<RoleAddStatus> {
+        try {
+            const role = this.roleRepository.build({
+                roleName: command.roleName
+            } as any);
+            await role.save();
+            return RoleAddStatus.Success;
+        }
+        catch (error) {
+            return RoleAddStatus.Error;
         }
     }
 }

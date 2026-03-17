@@ -4,8 +4,14 @@ import { Car, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetCarQuery } from './queries/get-car.query';
 import { UpdateCarCommand } from './commands/update-car.command';
+import { AddCarCommand } from './commands/add-car.command';
 
-enum CarUpdateStatus {
+export enum CarAddStatus {
+    Success,
+    Error
+}
+
+export enum CarUpdateStatus {
     Success,
     NotFound,
     Error
@@ -55,6 +61,22 @@ export class CarRepository {
         }
         catch (error) {
             return CarUpdateStatus.Error;
+        }
+    }
+
+    async addCar(command: AddCarCommand): Promise<CarAddStatus> {
+        try {
+            const car = this.carRepository.build({
+                carNumber: command.carNumber,
+                modelName: command.modelName,
+                vin: command.vin,
+                color: command.color
+            } as any);
+            await car.save();
+            return CarAddStatus.Success;
+        }
+        catch (error) {
+            return CarAddStatus.Error;
         }
     }
 }

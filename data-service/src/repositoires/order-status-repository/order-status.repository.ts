@@ -4,8 +4,14 @@ import { Car, OrderStatus, Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetOrderStatusQuery } from './queries/get-order-status.query';
 import { UpdateOrderStatusCommand } from './command/update-order-status.command';
+import { AddOrderStatusCommand } from './commands/add-order-status.command';
 
-enum OrderStatusUpdateStatus {
+export enum OrderStatusAddStatus {
+    Success,
+    Error
+}
+
+export enum OrderStatusUpdateStatus {
     Success,
     NotFound,
     Error
@@ -39,6 +45,19 @@ export class OrderStatusRepository {
         }
         catch (error) {
             return OrderStatusUpdateStatus.Error;
+        }
+    }
+
+    async addOrderStatus(command: AddOrderStatusCommand): Promise<OrderStatusAddStatus> {
+        try {
+            const orderStatus = this.orderStatusRepository.build({
+                orderStatusName: command.orderStatusName
+            } as any);
+            await orderStatus.save();
+            return OrderStatusAddStatus.Success;
+        }
+        catch (error) {
+            return OrderStatusAddStatus.Error;
         }
     }
 }

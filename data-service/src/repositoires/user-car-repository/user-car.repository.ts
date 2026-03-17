@@ -5,8 +5,14 @@ import { WhereOptions } from 'sequelize';
 import { UpdateUserCarCommand } from './commands/update-user-car.command';
 import { GetCarQuery } from '../car-repository/queries/get-car.query';
 import { GetUserCarQuery } from './queries/get-user-car.query';
+import { AddUserCarCommand } from './commands/add-user-car.command';
 
-enum UserCarUpdateStatus {
+export enum UserCarAddStatus {
+    Success,
+    Error
+}
+
+export enum UserCarUpdateStatus {
     Success,
     NotFound,
     Error
@@ -55,6 +61,21 @@ export class UserCarRepository {
         }
         catch (error) {
             return UserCarUpdateStatus.Error;
+        }
+    }
+
+    async addUserCar(command: AddUserCarCommand): Promise<UserCarAddStatus> {
+        try {
+            const userCar = this.userCarRepository.build({
+                userId: command.userId,
+                carId: command.carId,
+                ownsNow: command.ownsNow
+            } as any);
+            await userCar.save();
+            return UserCarAddStatus.Success;
+        }
+        catch (error) {
+            return UserCarAddStatus.Error;
         }
     }
 }

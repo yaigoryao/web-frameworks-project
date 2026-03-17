@@ -5,6 +5,12 @@ import { WhereOptions } from 'sequelize';
 import { GetUserQuery } from './queries/get-user.query';
 import { UpdateUserCommand } from './commands/update-user.command';
 import { DeleteUserCommand } from './commands/delete-user.command';
+import { AddUserCommand } from './commands/add-user.command';
+
+export enum UserAddStatus {
+    Success,
+    Error
+}
 
 export enum UserUpdateStatus {
     Success,
@@ -79,6 +85,28 @@ export class UserRepository {
         }
         catch (error) {
             return UserDeleteStatus.Error;
+        }
+    }
+
+    async addUser(command: AddUserCommand): Promise<UserAddStatus> {
+        try {
+            const user = this.userRepository.build({
+                login: command.login,
+                password: command.password,
+                salt: command.salt,
+                refreshToken: command.refreshToken,
+                name: command.name,
+                surname: command.surname,
+                patronymic: command.patronymic,
+                phoneNumber: command.phoneNumber,
+                isActive: command.isActive,
+                roleId: command.roleId
+            } as any);
+            await user.save();
+            return UserAddStatus.Success;
+        }
+        catch (error) {
+            return UserAddStatus.Error;
         }
     }
 }
