@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Car, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
+import { GetCarQuery } from './queries/get-car.query';
+import { UpdateCarCommand } from './commands/update-car.command';
 
 enum CarUpdateStatus {
     Success,
@@ -26,7 +28,7 @@ export class CarRepository {
             whereOptions.vin = query.vin;
         }
 
-        return this.carRepository.findAll({ where: whereOptions });
+        return this.carRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
     }
 
     async updateCar(command: UpdateCarCommand): Promise<CarUpdateStatus> {

@@ -1,21 +1,21 @@
 import { ErrorBuilder, Role, User } from '@monorepo/shared';
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { IRefreshResponse } from './models/refresh.response';
-import { ILoginResponse } from './models/login.response';
-import { ILoginRequest } from './models/login.request';
-import { IRefreshRequest } from './models/refresh.request';
+import { IRefreshResponse } from '@monorepo/shared/src/contracts/responses/refresh/refresh.response';
+import { ILoginResponse } from '@monorepo/shared/src/contracts/responses/login/login.response';
+import { ILoginRequest } from '@monorepo/shared';
+import { IRefreshRequest } from '@monorepo/shared';
 import { UserJwtData } from '@monorepo/shared/contracts/dto/user-jwt-data.dto';
-import { IRegisterResponse } from './models/register.response';
-import { IRegisterRequest } from './models/register.request';
+import { IRegisterResponse } from '@monorepo/shared/src/contracts/responses/register/register.response';
+import { IRegisterRequest } from '@monorepo/shared';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 
 @Injectable()
 export class AuthService {
-    static readonly jwtOptions = { expiresIn: '2m', algorithm: 'RS256' } satisfies jwt.SignOptions;
+    static readonly jwtOptions = { expiresIn: '5m', algorithm: 'RS256' } satisfies jwt.SignOptions;
 
     constructor(@InjectModel(User) private readonly userModel: typeof User,
         @InjectModel(Role) private readonly roleModel: typeof Role,
@@ -72,7 +72,7 @@ export class AuthService {
 
     public async register(registerRequest: IRegisterRequest): Promise<IRegisterResponse> {
 
-        const errBuilder = new ErrorBuilder();
+        //const errBuilder = new ErrorBuilder();
 
         let users = await this.userModel.findAll({
             where: {
@@ -80,7 +80,7 @@ export class AuthService {
             }
         });
 
-        if (users.length > 0) errBuilder.addErrorMessage('Пользователь с таким логином уже существует');
+        if (users.length > 0) throw new ConflictException("Данный логин уже занят!");//errBuilder.addErrorMessage('Пользователь с таким логином уже существует');
 
 
         let userRole = await this.roleModel.findOne({
@@ -112,14 +112,15 @@ export class AuthService {
             } as User);
         }
         catch (error: unknown) {
-            if (error instanceof Error) {
-                errBuilder.addErrorMessage(error.message);
-            }
+            throw new InternalServerErrorException("Ошибка при регистрации пользователя");
+            // if (error instanceof Error) {
+            //     errBuilder.addErrorMessage(error.message);
+            // }
         }
 
-        if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
+        //if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
 
-        if (errBuilder.hasErrors()) throw errBuilder.build();
+        //if (errBuilder.hasErrors()) throw errBuilder.build();
         return { login: user!.login } satisfies IRegisterResponse;
     }
 

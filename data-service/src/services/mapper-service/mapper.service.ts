@@ -14,6 +14,11 @@ export class MapperService {
         if (mapper === undefined) {
             throw new Error("Не найден соответствующий маппер");
         }
-        return mapper.toDto(entity) as TDto;
+        return mapper.toDto(entity);
     }
+
+    toDtos<TEntity, TDto>(entities: TEntity[]): TDto[] {
+        return entities.map(entity => this.toDto(entity));
+    }
+
 }

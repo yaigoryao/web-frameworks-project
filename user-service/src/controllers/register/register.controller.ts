@@ -12,14 +12,14 @@ export class RegisterController {
 
     @Post()
     async register(@Req() registerRequest: Request) {
-        try {
-            return await this.authService.register(registerRequest.body);
-        }
-        catch (error: unknown) {
-            if (error instanceof Error) {
-                return { error: splitErrorMessage(error) } satisfies IError;
-            }
-            return { error: ['Ошибка регистрации'] } satisfies IError;
-        }
+        return await this.authService.register(registerRequest.body);
+        // try {
+        // }
+        // catch (error: unknown) {
+        //     if (error instanceof Error) {
+        //         return { error: splitErrorMessage(error) } satisfies IError;
+        //     }
+        //     return { error: ['Ошибка регистрации'] } satisfies IError;
+        // }
     }
 }

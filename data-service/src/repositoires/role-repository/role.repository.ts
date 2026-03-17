@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Car, Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
+import { GetRoleQuery } from './queries/get-role.query';
+import { UpdateRoleCommand } from './commands/update-role.command';
 
 enum RoleUpdateStatus {
     Success,

@@ -17,3 +17,11 @@ export * from './contracts/dto/user-jwt-data.dto';
 export * from './contracts/dto/user.dto';
 
 export * from './common/utils/error.utils';
+
+export * from './contracts/requests/customers/user/customers-update-user-info.request';
+export * from './contracts/responses/login/login.response';
+export * from './contracts/responses/register/register.response';
+export * from './contracts/responses/refresh/refresh.response';
+export * from './contracts/requests/any/login/login.request';
+export * from './contracts/requests/any/register/register.request';
+export * from './contracts/requests/any/refresh/refresh.request';

@@ -1,4 +1,4 @@
-import { ILoginRequest } from "./login.request";
+import { ILoginRequest } from '../login/login.request';
 export interface IRegisterRequest extends ILoginRequest {
     login: string;
     name: string;
@@ -6,4 +6,4 @@ export interface IRegisterRequest extends ILoginRequest {
     surname: string;
     patronymic?: string;
     phoneNumber: string;
- };
+};
