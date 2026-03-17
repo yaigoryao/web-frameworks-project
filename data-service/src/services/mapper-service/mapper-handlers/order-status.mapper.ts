@@ -1,6 +1,6 @@
 import { OrderStatus, OrderStatusDto, RoleDto } from "@monorepo/shared";
-import { IDataMapper } from "./base.mapper.js";
-import { MapperService } from "../mapper.service.js";
+import { IDataMapper } from './base.mapper';
+import { MapperService } from "../mapper.service";
 import { ModuleRef } from "@nestjs/core";
 import { Injectable } from "@nestjs/common";
 

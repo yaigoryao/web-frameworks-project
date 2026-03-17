@@ -18,7 +18,7 @@ export class CustomerCarService {
         private readonly mapper: MapperService,
         private readonly carRepository: CarRepository) { }
 
-    public async getCarsInfo(): Promise<CarDto[]> {
+    public async getCarsInfo(): Promise<(CarDto | null)[]> {
         let cars: Car[] | null = null;
         try {
             cars = await this.carRepository.getCars(new GetCarQuery());

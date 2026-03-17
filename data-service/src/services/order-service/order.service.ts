@@ -15,7 +15,7 @@ export class OrderService {
         private readonly authorizationService: AuthorizationService,
         @InjectModel(Order) private readonly orderModel: typeof Order) { }
 
-    public async getOrders(getOrderRequest: IGetOrdersRequest, user: User | null): Promise<OrderDto[]> {
+    public async getOrders(getOrderRequest: IGetOrdersRequest, user: User | null): Promise<(OrderDto | null)[]> {
         if (!user) {
             throw new NotFoundException("Пользователь не найден");
         }

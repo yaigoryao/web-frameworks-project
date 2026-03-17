@@ -1,10 +1,11 @@
 import { IError, splitErrorMessage } from "@monorepo/shared";
 import { Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "../../guards/auth-guard/auth.guard";
+import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 //import { IGetUserInfoRequest } from "../../services/user-service/models/get-user-info.request";
-import { CustomerUserService } from "../../services/user-service/customers/customers-user.service";
+import { CustomerUserService } from "../../../services/user-service/customers/customers-user.service";
 import { Request } from 'express';
-import { Constants } from "../../common/constants/constants";
+import { Constants } from "../../../common/constants/constants";
+import '../../../common/extensions/request.extension';
 
 @Controller('user')
 export class CustomersUserController {

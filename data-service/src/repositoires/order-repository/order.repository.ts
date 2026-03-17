@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Car, Order, User } from '@monorepo/shared';
+import { Car, Order, OrderStatus, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
 import { UpdateOrderCommand } from './commands/update-order.command';
@@ -38,7 +38,7 @@ export class OrderRepository {
         if (query.userId) {
             whereOptions.userId = query.userId;
         }
-        return this.orderRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
+        return this.orderRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset, include: [OrderStatus, Car] });
     }
 
     async updateOrder(command: UpdateOrderCommand): Promise<OrderUpdateStatus> {

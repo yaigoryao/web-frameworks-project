@@ -7,7 +7,7 @@ import { MapperService } from './services/mapper-service/mapper.service';
 import { UserMapper } from './services/mapper-service/mapper-handlers/user.mapper'
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CustomersUserController } from './controllers/user/user.controller';
+import { CustomersUserController } from './controllers/user/customer/customer-user.controller';
 import { CarMapper } from './services/mapper-service/mapper-handlers/car.mapper';
 import { OrderMapper } from './services/mapper-service/mapper-handlers/order.mapper';
 import { OrderStatusMapper } from './services/mapper-service/mapper-handlers/order-status.mapper';
@@ -16,6 +16,7 @@ import { CustomerUserService } from './services/user-service/customers/customers
 import { IDataMapper } from './services/mapper-service/mapper-handlers/base.mapper';
 import { AuthGuard } from './guards/auth-guard/auth.guard';
 import { Dialect } from 'sequelize';
+import { UserRepository } from './repositoires/user-repository/user.repository';
 //import { DataModel } from './models/data.model';
 
 export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
@@ -67,7 +68,7 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
       useFactory: (...mappers: IDataMapper<any, any>[]) => mappers,
       inject: [UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper],
     },
-    AuthGuard, CustomerUserService
+    AuthGuard, UserRepository
   ],
   exports: [MAPPERS_TOKEN]
 })

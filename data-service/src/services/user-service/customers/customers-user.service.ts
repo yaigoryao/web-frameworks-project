@@ -17,7 +17,7 @@ export class CustomerUserService {
         private readonly mapper: MapperService,
         private readonly userRepository: UserRepository) { }
 
-    public async getUserInfo(login: string | null): Promise<UserDto> {
+    public async getUserInfo(login: string | null): Promise<UserDto | null> {
         let user: User | null = null;
         try {
             user = await this.userRepository.getUser(new GetUserQuery({ login: login }));
@@ -39,7 +39,7 @@ export class CustomerUserService {
     }
 
     public async updateUser(login: string | null, updateInfoRequest: CustomerUpdateUserRequest): Promise<UserUpdateStatus> {
-        if (login !== updateInfoRequest.login) {
+        if (login !== updateInfoRequest?.login) {
             throw new ForbiddenException("Недостаточно прав для обновления информации другого пользователя");
         }
         try {

@@ -28,8 +28,8 @@ export class UserMapper extends IDataMapper<User, UserDto> {
             phoneNumber: entity.phoneNumber,
             roleId: entity.roleId,
             role: this.mappingService.toDto<Role, RoleDto>(entity.role),
-            cars: entity.cars.map(car => this.mappingService.toDto<Car, CarDto>(car)),
-            orders: entity.orders.map(order => this.mappingService.toDto<Order, OrderDto>(order)),
+            // cars: entity.cars.map(car => this.mappingService.toDto<Car, CarDto>(car)),
+            // orders: entity.orders.map(order => this.mappingService.toDto<Order, OrderDto>(order)),
         } as UserDto;
         return dto;
     }

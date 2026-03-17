@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from '@monorepo/shared';
+import { Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetUserQuery } from './queries/get-user.query';
 import { UpdateUserCommand } from './commands/update-user.command';
@@ -26,13 +26,13 @@ export class UserRepository {
     async getUser(query: GetUserQuery): Promise<User | null> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
-            whereOptions.login = query.id;
+            whereOptions.id = query.id;
         }
         if (query.login) {
             whereOptions.login = query.login;
         }
 
-        return this.userRepository.findOne({ where: whereOptions });
+        return this.userRepository.findOne({ where: whereOptions, include: [Role] });
     }
 
     async updateUser(command: UpdateUserCommand): Promise<UserUpdateStatus> {
