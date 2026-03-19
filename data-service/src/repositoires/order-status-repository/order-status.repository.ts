@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Car, OrderStatus, Role, User } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetOrderStatusQuery } from './queries/get-order-status.query';
-import { UpdateOrderStatusCommand } from './command/update-order-status.command';
+import { UpdateOrderStatusCommand } from './commands/update-order-status.command';
 import { AddOrderStatusCommand } from './commands/add-order-status.command';
 
 export enum OrderStatusAddStatus {
@@ -22,12 +22,12 @@ export class OrderStatusRepository {
     constructor(
         @InjectModel(OrderStatus) private readonly orderStatusRepository: typeof OrderStatus) { }
 
-    async getOrderStatus(query: GetOrderStatusQuery): Promise<OrderStatus | null> {
+    async getOrderStatus(query: GetOrderStatusQuery): Promise<OrderStatus[]> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;
         }
-        return this.orderStatusRepository.findOne({ where: whereOptions });
+        return this.orderStatusRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
     }
 
     async updateOrderStatus(command: UpdateOrderStatusCommand): Promise<OrderStatusUpdateStatus> {

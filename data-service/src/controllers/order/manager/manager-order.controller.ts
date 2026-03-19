@@ -9,7 +9,7 @@ import { AddOrderCommand } from "../../../repositoires/order-repository/commands
 import { UpdateOrderCommand } from "../../../repositoires/order-repository/commands/update-order.command";
 import '../../../common/extensions/request.extension';
 
-@Controller('order')
+@Controller('manager/order')
 export class ManagersOrderController {
     constructor(private readonly managersOrderService: ManagersOrderService) { }
 

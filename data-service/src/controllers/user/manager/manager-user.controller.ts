@@ -10,7 +10,7 @@ import { UpdateUserCommand } from "../../../repositoires/user-repository/command
 import { Request } from 'express';
 import '../../../common/extensions/request.extension';
 
-@Controller('user')
+@Controller('manager/user')
 export class ManagersUserController {
     constructor(private readonly managersUserService: ManagersUserService) { }
 

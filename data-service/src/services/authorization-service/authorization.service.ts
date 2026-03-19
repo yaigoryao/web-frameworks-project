@@ -1,24 +1,30 @@
-import { User } from '@monorepo/shared';
-import { ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Role, User } from '@monorepo/shared';
+import { ForbiddenException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class AuthorizationService {
-    private static readonly requiredRoles = ["admin", "manager"];
+    //#private static readonly requiredRoles = ["admin", "manager"];
 
     constructor(@InjectModel(User) private readonly userModel: typeof User) {
 
     }
 
-    async validateUserRole(user: User): Promise<boolean> {
-        try {
-            if (!user) return false;
-            const isPrivileged = AuthorizationService.requiredRoles.some(role => user.role.roleName == role);
-            if (isPrivileged) return true;
-            return false;
+    public async authorizeUser(login: string | null, requiredRoles: string[]): Promise<boolean> {
+        if (!login) throw new UnauthorizedException("Пользователь не найден");
+
+        const user = await this.userModel.findOne({ where: { login: login! }, include: [Role] });
+
+        if (!user) {
+            throw new UnauthorizedException("Пользователь не найден");
         }
-        catch (error: unknown) {
-            throw new InternalServerErrorException("Ошибка обработки ");
+        if (!requiredRoles.includes(user?.role?.roleName)) {
+            throw new ForbiddenException("Недостаточно прав для выполнения данного действия");
         }
+        return true;
+        // if (!user) return false;
+        // const isPrivileged = AuthorizationService.requiredRoles.some(role => user.role.roleName == role);
+        // if (isPrivileged) return true;
+        // return false;
     }
 }

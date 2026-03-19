@@ -23,7 +23,7 @@ export class UserCarRepository {
     constructor(
         @InjectModel(UserCar) private readonly userCarRepository: typeof UserCar) { }
 
-    async getUsersCars(query: GetUserCarQuery): Promise<UserCar[] | null> {
+    async getUsersCars(query: GetUserCarQuery): Promise<UserCar[]> {
         const whereOptions: WhereOptions = {};
         if (query.userId) {
             whereOptions.userId = query.userId;

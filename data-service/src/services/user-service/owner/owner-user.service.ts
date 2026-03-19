@@ -43,7 +43,6 @@ export class OwnerUserService {
                 throw new NotFoundException("Пользователь не найден");
             }
 
-            // Owner может обновлять любого пользователя на любую роль
             return await this.userRepository.updateUser(command);
         }
         catch (error) {

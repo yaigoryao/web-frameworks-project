@@ -17,10 +17,8 @@ export class DatabaseInitializerService {
 
     async initializeDatabase(): Promise<void> {
         try {
-            // Create default roles
             await this.createRoles();
 
-            // Create owner account
             await this.createOwnerAccount();
 
             this.logger.log('Database initialization completed successfully');
@@ -46,21 +44,18 @@ export class DatabaseInitializerService {
     private async createOwnerAccount(): Promise<void> {
         const ownerLogin = this.configService.get<string>('OWNER_LOGIN');
 
-        // Check if owner already exists
         const existingOwner = await this.userModel.findOne({ where: { login: ownerLogin } });
         if (existingOwner) {
             this.logger.log(`Owner account '${ownerLogin}' already exists`);
             return;
         }
 
-        // Get owner role
         const ownerRole = await this.roleModel.findOne({ where: { roleName: 'owner' } });
         if (!ownerRole) {
             this.logger.error('Owner role not found');
             return;
         }
 
-        // Create owner account
         const ownerPassword = this.configService.get<string>('OWNER_PASSWORD');
         const ownerName = this.configService.get<string>('OWNER_NAME') || 'Admin';
         const ownerSurname = this.configService.get<string>('OWNER_SURNAME') || 'User';

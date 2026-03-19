@@ -9,7 +9,7 @@ import { AddCarCommand } from "../../../repositoires/car-repository/commands/add
 import { UpdateCarCommand } from "../../../repositoires/car-repository/commands/update-car.command";
 import '../../../common/extensions/request.extension';
 
-@Controller('car')
+@Controller('manager/car')
 export class ManagersCarController {
     constructor(private readonly managersCarService: ManagersCarService) { }
 

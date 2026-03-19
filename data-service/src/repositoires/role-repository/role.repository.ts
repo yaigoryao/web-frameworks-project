@@ -22,12 +22,12 @@ export class RoleRepository {
     constructor(
         @InjectModel(Role) private readonly roleRepository: typeof Role) { }
 
-    async getRole(query: GetRoleQuery): Promise<Role | null> {
+    async getRole(query: GetRoleQuery): Promise<Role[]> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;
         }
-        return this.roleRepository.findOne({ where: whereOptions });
+        return this.roleRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
     }
 
     async updateRole(command: UpdateRoleCommand): Promise<RoleUpdateStatus> {

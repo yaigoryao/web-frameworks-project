@@ -6,7 +6,7 @@ import { GetOrderQuery } from "../../../repositoires/order-repository/queries/ge
 import { Request } from 'express';
 import '../../../common/extensions/request.extension';
 
-@Controller('order')
+@Controller('customer/order')
 export class CustomerOrderController {
     constructor(private readonly customerOrderService: CustomerOrderService) { }
 

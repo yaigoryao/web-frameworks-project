@@ -5,7 +5,7 @@ import { CarDto } from "@monorepo/shared";
 import { GetCarQuery } from "../../../repositoires/car-repository/queries/get-car.query";
 import '../../../common/extensions/request.extension';
 
-@Controller('car')
+@Controller('customer/car')
 export class CustomerCarController {
     constructor(private readonly customerCarService: CustomerCarService) { }
 

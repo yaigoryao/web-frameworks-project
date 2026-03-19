@@ -8,7 +8,7 @@ import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
 import '../../../common/extensions/request.extension';
 
-@Controller('user')
+@Controller('owner/user')
 export class OwnerUserController {
     constructor(private readonly ownerUserService: OwnerUserService) { }
 

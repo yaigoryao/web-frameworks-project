@@ -6,6 +6,7 @@ import { GetUserQuery } from './queries/get-user.query';
 import { UpdateUserCommand } from './commands/update-user.command';
 import { DeleteUserCommand } from './commands/delete-user.command';
 import { AddUserCommand } from './commands/add-user.command';
+import bcrypt from 'bcrypt';
 
 export enum UserAddStatus {
     Success,
@@ -64,6 +65,12 @@ export class UserRepository {
             }
             if (command.roleId !== null) {
                 user.roleId = command.roleId;
+            }
+            if (command.password !== null) {
+
+                let salt = crypto.randomUUID();
+                user.salt = salt;
+                user.password = await bcrypt.hash(`${command.password}${salt}`, 10);
             }
             await user.save();
             return UserUpdateStatus.Success;

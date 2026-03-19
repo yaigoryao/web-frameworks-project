@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Car, User } from '@monorepo/shared';
+import { Car, User, UserCar } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
 import { GetCarQuery } from './queries/get-car.query';
 import { UpdateCarCommand } from './commands/update-car.command';
 import { AddCarCommand } from './commands/add-car.command';
+import { Op } from 'sequelize';
 
 export enum CarAddStatus {
     Success,
@@ -20,7 +21,8 @@ export enum CarUpdateStatus {
 @Injectable()
 export class CarRepository {
     constructor(
-        @InjectModel(Car) private readonly carRepository: typeof Car) { }
+        @InjectModel(Car) private readonly carRepository: typeof Car,
+        @InjectModel(UserCar) private readonly userCarRepository: typeof UserCar) { }
 
     async getCars(query: GetCarQuery): Promise<Car[] | null> {
         const whereOptions: WhereOptions = {};
@@ -33,7 +35,11 @@ export class CarRepository {
         if (query.vin) {
             whereOptions.vin = query.vin;
         }
-
+        if (query.userId) {
+            whereOptions.id = {
+                [Op.in]: (await this.userCarRepository.findAll({ where: { userId: query.userId } })).map(uc => uc.carId)
+            };
+        }
         return this.carRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
     }
 

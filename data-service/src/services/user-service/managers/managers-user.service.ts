@@ -31,19 +31,16 @@ export class ManagersUserService {
                 throw new NotFoundException("Менеджер не найден");
             }
 
-            // Если указан конкретный пользователь
             if (query.login || query.id) {
                 const user = await this.userRepository.getUser(query);
                 if (!user) {
                     throw new NotFoundException("Пользователь не найден");
                 }
 
-                // Менеджер может читать самого себя
                 if (user.login === managerLogin) {
                     return this.mapper.toDto<User, UserDto>(user);
                 }
 
-                // Менеджер может читать только обычных пользователей
                 if (user.role?.roleName?.toLowerCase() !== 'user') {
                     throw new ForbiddenException("Недостаточно прав для чтения информации об этом пользователе");
                 }
@@ -51,7 +48,6 @@ export class ManagersUserService {
                 return this.mapper.toDto<User, UserDto>(user);
             }
 
-            // Если пользователь не указан, вернуть самого себя
             const selfUser = await this.userModel.findOne({ where: { login: managerLogin }, include: [Role] });
             return this.mapper.toDto<User, UserDto>(selfUser!);
         }
@@ -65,13 +61,11 @@ export class ManagersUserService {
 
     public async addUser(command: AddUserCommand): Promise<UserAddStatus> {
         try {
-            // Проверить, что roleId указывает на обычного пользователя
             const role = await this.roleModel.findOne({ where: { id: command.roleId } });
             if (!role || role.roleName.toLowerCase() !== 'user') {
                 throw new BadRequestException("Менеджер может создавать только обычных пользователей");
             }
 
-            // Добавить salt и refreshToken
             const salt = crypto.randomUUID();
             const hashedPassword = await bcrypt.hash(`${command.password}${salt}`, 10);
 
@@ -101,12 +95,10 @@ export class ManagersUserService {
                 throw new NotFoundException("Пользователь не найден");
             }
 
-            // Менеджер может обновлять только себя или обычных пользователей
             if (command.login !== managerLogin && userToUpdate.role?.roleName?.toLowerCase() !== 'user') {
                 throw new ForbiddenException("Недостаточно прав для обновления информации об этом пользователе");
             }
 
-            // Если при обновлении указана новая роль, проверить что это обычный пользователь
             if (command.roleId !== null) {
                 const newRole = await this.roleModel.findOne({ where: { id: command.roleId } });
                 if (!newRole || newRole.roleName.toLowerCase() !== 'user') {

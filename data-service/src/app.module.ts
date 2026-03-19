@@ -40,6 +40,12 @@ import { OwnerUserService } from './services/user-service/owner/owner-user.servi
 import { RolesGuard } from './guards/role-guard/role.guard';
 import { OwnerGuard } from './guards/owner-guard/owner.guard';
 import { DatabaseInitializerService } from './services/database-initializer/database-initializer.service';
+import { AuthorizationService } from './services/authorization-service/authorization.service';
+import { ManagersRoleController } from './controllers/role/manager/manager-role.controller';
+import { ManagersOrderStatusController } from './controllers/order-status/manager/manager-order-status.controller';
+import { UserCarMapper } from './services/mapper-service/mapper-handlers/user-car.mapper';
+import { ManagerUserCarController } from './controllers/user-car/manager/manager-user-car.controller';
+import { UserCarRepository } from './repositoires/user-car-repository/user-car.repository';
 //import { DataModel } from './models/data.model';
 
 export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
@@ -49,18 +55,27 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     SequelizeModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        dialect: config.get<Dialect>('DB_DIALECT') || 'sqlite',
-        storage: config.get<string>('DB_STORAGE') || 'temp.db',//=== 'sqlite' ? config.get('SQLITE_STORAGE') || ':memory:' : undefined,
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT') ? Number(config.get('DB_PORT')) : undefined,
-        username: config.get<string>('DB_USERNAME'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME') || 'app_db',
-        models: [User, Role, UserCar, Car, Order, OrderStatus],
-        autoLoadModels: true,
-        synchronize: true
-      })
+      useFactory: (config: ConfigService) => {
+        const dialect = config.get<Dialect>('DB_DIALECT') || 'sqlite';
+        const sequelizeConfig: any = {
+          dialect: dialect,
+          autoLoadModels: true,
+          synchronize: true
+        };
+
+        if (dialect === 'sqlite') {
+          sequelizeConfig.storage = config.get<string>('DB_STORAGE') || 'temp.db';
+        } else {
+          sequelizeConfig.host = config.get<string>('DB_HOST') || 'localhost';
+          sequelizeConfig.port = config.get<number>('DB_PORT') ? Number(config.get('DB_PORT')) : 5432;
+          sequelizeConfig.username = config.get<string>('DB_USERNAME') || 'postgres';
+          sequelizeConfig.password = config.get<string>('DB_PASSWORD') || 'postgres';
+          sequelizeConfig.database = config.get<string>('DB_NAME') || 'app_db';
+        }
+
+        sequelizeConfig.models = [User, Role, UserCar, Car, Order, OrderStatus];
+        return sequelizeConfig;
+      }
     }),
     // SequelizeModule.forRoot({
     //   dialect: (process.env.DB_DIALECT as any) || 'sqlite',
@@ -83,16 +98,21 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
       }),
     }),
   ],
-  controllers: [AppController, CustomersUserController, CustomerCarController, ManagersCarController, OwnerCarController, CustomerOrderController, ManagersOrderController, OwnerOrderController, ManagersUserController, OwnerUserController],
+  controllers: [AppController, CustomersUserController, CustomerCarController, ManagersCarController,
+    OwnerCarController, CustomerOrderController, ManagersOrderController,
+    OwnerOrderController, ManagersUserController, OwnerUserController,
+    ManagersRoleController, ManagersOrderStatusController, ManagerUserCarController],
   providers: [AppService, MapperService, DatabaseInitializerService,
-    CustomerUserService, CustomerCarService, ManagersCarService, OwnerCarService, CustomerOrderService, ManagersOrderService, OwnerOrderService, ManagersUserService, OwnerUserService,
-    UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper,
+    CustomerUserService, CustomerCarService, ManagersCarService, OwnerCarService, CustomerOrderService,
+    ManagersOrderService, OwnerOrderService, ManagersUserService, OwnerUserService,
+    UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper, UserCarMapper,
     {
       provide: MAPPERS_TOKEN,
       useFactory: (...mappers: IDataMapper<any, any>[]) => mappers,
-      inject: [UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper],
+      inject: [UserMapper, CarMapper, OrderMapper, OrderStatusMapper, RoleMapper, UserCarMapper],
     },
-    AuthGuard, RolesGuard, OwnerGuard, UserRepository, CarRepository, OrderRepository, OrderStatusRepository, RoleRepository
+    AuthGuard, RolesGuard, OwnerGuard, UserRepository, CarRepository, OrderRepository, OrderStatusRepository, RoleRepository, AuthorizationService,
+    UserCarRepository
   ],
   exports: [MAPPERS_TOKEN]
 })
