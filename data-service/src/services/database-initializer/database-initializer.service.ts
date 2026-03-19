@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
-import { User, Role } from '@monorepo/shared';
+import { User, Role, OrderStatus } from '@monorepo/shared';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
@@ -12,6 +12,7 @@ export class DatabaseInitializerService {
     constructor(
         @InjectModel(Role) private readonly roleModel: typeof Role,
         @InjectModel(User) private readonly userModel: typeof User,
+        @InjectModel(OrderStatus) private readonly orderStatusModel: typeof OrderStatus,
         private readonly configService: ConfigService
     ) { }
 
@@ -21,6 +22,7 @@ export class DatabaseInitializerService {
 
             await this.createOwnerAccount();
 
+            await this.createOrderStatuses();
             this.logger.log('Database initialization completed successfully');
         }
         catch (error) {
@@ -46,13 +48,13 @@ export class DatabaseInitializerService {
 
         const existingOwner = await this.userModel.findOne({ where: { login: ownerLogin } });
         if (existingOwner) {
-            this.logger.log(`Owner account '${ownerLogin}' already exists`);
+            //this.logger.log(`Owner account '${ownerLogin}' already exists`);
             return;
         }
 
         const ownerRole = await this.roleModel.findOne({ where: { roleName: 'owner' } });
         if (!ownerRole) {
-            this.logger.error('Owner role not found');
+            //this.logger.error('Owner role not found');
             return;
         }
 
@@ -78,6 +80,17 @@ export class DatabaseInitializerService {
         } as any);
 
         await owner.save();
-        this.logger.log(`Created owner account: ${ownerLogin}`);
+        //this.logger.log(`Created owner account: ${ownerLogin}`);
+    }
+
+    private async createOrderStatuses(): Promise<void> {
+        const ordersStatuses = ['in_process', 'completed', 'cancelled', 'pending', 'deleted', 'waiting_car'];
+
+        for (const status of ordersStatuses) {
+            const existingRole = await this.orderStatusModel.findOne({ where: { orderStatusName: status } });
+            if (!existingRole) {
+                await this.orderStatusModel.create({ orderStatusName: status } as OrderStatus);
+            }
+        }
     }
 }

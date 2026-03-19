@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Car, Role, User, UserCar } from '@monorepo/shared';
 import { WhereOptions } from 'sequelize';
@@ -40,13 +40,11 @@ export class UserCarRepository {
     async updateUserCar(command: UpdateUserCarCommand): Promise<UserCarUpdateStatus> {
         try {
 
+            if (!command.userId || !command.carId) throw new BadRequestException("Необходимо указать идентификатор пользователя и автомобиля");
             const whereOptions: WhereOptions = {};
-            if (command.userId) {
-                whereOptions.userId = command.userId;
-            }
-            if (command.carId) {
-                whereOptions.carId = command.carId;
-            }
+
+            whereOptions.userId = command.userId!;
+            whereOptions.carId = command.carId!;
 
             const userCar = await this.userCarRepository.findOne({ where: whereOptions });
             if (!userCar) {

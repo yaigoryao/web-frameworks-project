@@ -3,5 +3,5 @@ export class CarDto {
     declare carNumber: string;
     declare modelName: string;
     declare vin: string;
-    declare color: string;
+    declare color: number;
 }

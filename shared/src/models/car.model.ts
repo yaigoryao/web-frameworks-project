@@ -14,11 +14,11 @@ export class Car extends Model<Car> {
   @Column({ type: DataType.STRING, allowNull: false })
   declare modelName: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
   declare vin: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  declare color: string;
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare color: number;
 
   @HasMany(() => Order, 'carId')
   declare orders: Order[];

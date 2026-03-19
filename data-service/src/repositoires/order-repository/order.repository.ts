@@ -23,7 +23,7 @@ export class OrderRepository {
     constructor(
         @InjectModel(Order) private readonly orderRepository: typeof Order) { }
 
-    async getOrders(query: GetOrderQuery): Promise<Order[] | null> {
+    async getOrders(query: GetOrderQuery): Promise<Order[]> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;

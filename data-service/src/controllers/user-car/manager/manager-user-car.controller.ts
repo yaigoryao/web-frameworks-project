@@ -36,6 +36,6 @@ export class ManagerUserCarController {
     @Put()
     @UseGuards(AuthGuard, RolesGuard)
     async updateUserCar(@Body() command: UpdateUserCarCommand) {
-        return await this.userCarRepository.addUserCar(command);//, getUserInfoRequest.user);
+        return await this.userCarRepository.updateUserCar(command);//, getUserInfoRequest.user);
     }
 }
