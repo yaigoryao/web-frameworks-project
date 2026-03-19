@@ -3,6 +3,7 @@ import {
     CanActivate,
     ExecutionContext,
     Injectable,
+    InternalServerErrorException,
     UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -34,7 +35,7 @@ export class AuthGuard implements CanActivate {
             //     }
             // });
         } catch {
-            throw new UnauthorizedException("Ошибка авторизации");
+            throw new InternalServerErrorException("Ошибка авторизации");
         }
         return true;
     }

@@ -24,7 +24,7 @@ export class CarRepository {
         @InjectModel(Car) private readonly carRepository: typeof Car,
         @InjectModel(UserCar) private readonly userCarRepository: typeof UserCar) { }
 
-    async getCars(query: GetCarQuery): Promise<Car[] | null> {
+    async getCars(query: GetCarQuery): Promise<Car[]> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;

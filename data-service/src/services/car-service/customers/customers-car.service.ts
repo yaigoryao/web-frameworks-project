@@ -14,7 +14,7 @@ export class CustomerCarService {
     public async getCars(query: GetCarQuery): Promise<(CarDto | null)[]> {
         try {
             const cars = await this.carRepository.getCars(query);
-            return this.mapper.toDtos<Car, CarDto>(cars || []);
+            return this.mapper.toDtos<Car, CarDto>(cars);
         }
         catch (error) {
             throw new InternalServerErrorException("Ошибка при получении информации о машинах");
