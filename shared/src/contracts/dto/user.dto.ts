@@ -4,6 +4,7 @@ import { RoleDto } from "./role.dto";
 
 export class UserDto {
     declare id: number;
+    declare login: string;
     declare name: string;
     declare surname: string;
     declare patronymic: string;

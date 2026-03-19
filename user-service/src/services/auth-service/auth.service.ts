@@ -15,7 +15,7 @@ import { ConfigService } from '@nestjs/config/dist/config.service';
 
 @Injectable()
 export class AuthService {
-    static readonly jwtOptions = { expiresIn: '5m', algorithm: 'RS256' } satisfies jwt.SignOptions;
+    static readonly jwtOptions = { expiresIn: '60m', algorithm: 'RS256' } satisfies jwt.SignOptions;
 
     constructor(@InjectModel(User) private readonly userModel: typeof User,
         @InjectModel(Role) private readonly roleModel: typeof Role,

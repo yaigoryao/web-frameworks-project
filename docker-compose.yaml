@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    container_name: user_service
+    environment:
+      PORT: 3001
+      DB_DIALECT: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: app_db
+      JWT_SECRET: your_jwt_secret_here
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  data-service:
+    build:
+      context: .
+      dockerfile: ./data-service/Dockerfile
+    container_name: data_service
+    environment:
+      PORT: 3002
+      DB_DIALECT: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: app_db
+      JWT_PUBLIC_KEY: "-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEAtgBplQQHa4vylPG5QCoA9Hw2+kvCXxWNUc4vxE9KXRkIY5BEim9Y
+uyz9LqOUQEuVR/LNE6yIxLxU2dFX4pFuG1zoS/MIjcf48vurmcUEpWW56HNZ36s9
+2Z9mWfLgDrt3wX3qMdFXyZLcjn1Qr8h01zufiaJHWqgkLV95Tc4OFKu6grnOrzIT
+RgBCYMM3L2HV4y59Wq5o4qrIAgTL+s3rw/MDMXX/j3TQEw+Cmq4YVe1mOrrAOKzv
+tC7eEjWEhJ9eldQhQGT1p+E3Iy7RJvcRaSXmTZ8DeqJ/wJLPUH5SC9wPH6rOtKAv
+V9Mc7cdnTAKCZ+MX+nJK3oJmbHrPy1SmAQIDAQAB
+-----END RSA PUBLIC KEY-----"
+      OWNER_LOGIN: admin
+      OWNER_PASSWORD: admin123
+      OWNER_NAME: Admin
+      OWNER_SURNAME: User
+      OWNER_PHONE: "+1234567890"
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -35,7 +35,28 @@ Thumbs.db
 
 DEBUG.md
 README.md
+DOCKER.md 
 
 repomix-output.xml
 
 .continue/
+
+# Docker
+.docker/
+docker-compose.override.yaml
+
+# Database files (development)
+*.db
+*.sqlite
+*.sqlite3
+test.db
+dev.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+*.md
+*.sh
+*.bat

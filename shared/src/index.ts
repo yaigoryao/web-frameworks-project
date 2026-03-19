@@ -15,6 +15,7 @@ export * from './contracts/dto/order.dto';
 export * from './contracts/dto/role.dto';
 export * from './contracts/dto/user-jwt-data.dto';
 export * from './contracts/dto/user.dto';
+export * from './contracts/dto/user-car.dto';
 
 export * from './common/utils/error.utils';
 
