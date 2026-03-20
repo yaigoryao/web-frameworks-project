@@ -5,9 +5,9 @@ import { InjectModel } from "@nestjs/sequelize";
 import { MapperService } from "../../mapper-service/mapper.service";
 import { AuthorizationService } from "../../authorization-service/authorization.service";
 import { CustomerUpdateUserRequest } from "@monorepo/shared";
-import { UserRepository, UserUpdateStatus } from "data-service/src/repositoires/user-repository/user.repository";
-import { GetUserQuery } from "data-service/src/repositoires/user-repository/queries/get-user.query";
-import { UpdateUserCommand } from "data-service/src/repositoires/user-repository/commands/update-user.command";
+import { UserRepository, UserAddStatus, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
+import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
+import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
 //import { IUpdateUserInfoRequest } from "./models/update-user-info.request";
 
 @Injectable()

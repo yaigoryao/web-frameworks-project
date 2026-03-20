@@ -9,12 +9,19 @@ import { AddUserCommand } from "../../../repositoires/user-repository/commands/a
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
 import { Request } from 'express';
 import '../../../common/extensions/request.extension';
-import { Routes } from "data-service/src/common/routes/routes";
+import { Routes } from "../../../common/routes/routes";
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from "@nestjs/swagger";
 
+@ApiTags(Routes.Manager.User)
 @Controller(Routes.Manager.User)
 export class ManagersUserController {
     constructor(private readonly managersUserService: ManagersUserService) { }
 
+    @ApiOperation({ summary: 'Get user information' })
+    @ApiResponse({ status: 200, description: 'User information retrieved', type: UserDto })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiBearerAuth()
     @Get()
     @UseGuards(AuthGuard, RolesGuard)
     async getUsers(@Query() query: GetUserQuery, @Req() req: Request): Promise<UserDto | null> {
@@ -27,6 +34,13 @@ export class ManagersUserController {
     //     return await this.managersUserService.addUser(request);
     // }
 
+    @ApiOperation({ summary: 'Update user information' })
+    @ApiBody({ type: UpdateUserCommand, description: 'Updated user data' })
+    @ApiResponse({ status: 200, description: 'User updated successfully', type: Number })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiResponse({ status: 400, description: 'Invalid input' })
+    @ApiBearerAuth()
     @Put()
     @UseGuards(AuthGuard, RolesGuard)
     async updateUser(@Body() request: UpdateUserCommand, @Req() req: Request): Promise<UserUpdateStatus> {

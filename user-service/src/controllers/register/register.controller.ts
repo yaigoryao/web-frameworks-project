@@ -1,5 +1,3 @@
-import { splitErrorMessage } from '@monorepo/shared';
-import { IError } from '@monorepo/shared';
 import { Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../../services/auth-service/auth.service';

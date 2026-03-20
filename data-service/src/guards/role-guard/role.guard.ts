@@ -1,7 +1,7 @@
 import { Role, User, UserJwtData } from "@monorepo/shared";
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
-import { AuthorizationService } from "data-service/src/services/authorization-service/authorization.service";
+import { AuthorizationService } from "../../services/authorization-service/authorization.service";
 
 @Injectable()
 export class RolesGuard implements CanActivate {

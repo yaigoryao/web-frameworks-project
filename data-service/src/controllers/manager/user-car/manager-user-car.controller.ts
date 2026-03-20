@@ -5,16 +5,16 @@ import { CustomerUserService } from "../../../services/user-service/customers/cu
 import { Request } from 'express';
 import { Constants } from "../../../common/constants/constants";
 import '../../../common/extensions/request.extension';
-import { GetRoleQuery } from "data-service/src/repositoires/role-repository/queries/get-role.query";
-import { RoleRepository } from "data-service/src/repositoires/role-repository/role.repository";
-import { RolesGuard } from "data-service/src/guards/role-guard/role.guard";
-import { MapperService } from "data-service/src/services/mapper-service/mapper.service";
-import { UserCarRepository } from "data-service/src/repositoires/user-car-repository/user-car.repository";
-import { GetUserCarQuery } from "data-service/src/repositoires/user-car-repository/queries/get-user-car.query";
-import { AddUserCarCommand } from "data-service/src/repositoires/user-car-repository/commands/add-user-car.command";
-import { UpdateUserCarCommand } from "data-service/src/repositoires/user-car-repository/commands/update-user-car.command";
-import { Routes } from "data-service/src/common/routes/routes";
+import { Routes } from "../../../common/routes/routes";
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from "@nestjs/swagger";
+import { UserCarRepository } from "../../../repositoires/user-car-repository/user-car.repository";
+import { MapperService } from "../../../services/mapper-service/mapper.service";
+import { GetUserCarQuery } from "../../../repositoires/user-car-repository/queries/get-user-car.query";
+import { RolesGuard } from "../../../guards/role-guard/role.guard";
+import { AddUserCarCommand } from "../../../repositoires/user-car-repository/commands/add-user-car.command";
+import { UpdateUserCarCommand } from "../../../repositoires/user-car-repository/commands/update-user-car.command";
 
+@ApiTags(Routes.Manager.UserCar)
 @Controller(Routes.Manager.UserCar)
 export class ManagerUserCarController {
     constructor(private readonly userCarRepository: UserCarRepository,
@@ -22,18 +22,37 @@ export class ManagerUserCarController {
     ) {
     }
 
+    @ApiOperation({ summary: 'Get user cars associations' })
+    @ApiResponse({ status: 200, description: 'List of user car associations', type: UserCarDto, isArray: true })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiBearerAuth()
     @Get()
     @UseGuards(AuthGuard, RolesGuard)
     async getUserInfo(@Query() query: GetUserCarQuery) {
         return await this.mapper.toDtos<UserCar, UserCarDto>(await this.userCarRepository.getUsersCars(query));//, getUserInfoRequest.user);
     }
 
+    @ApiOperation({ summary: 'Add user-car association' })
+    @ApiBody({ type: AddUserCarCommand, description: 'User car data to add' })
+    @ApiResponse({ status: 201, description: 'User car association added successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiResponse({ status: 400, description: 'Invalid input' })
+    @ApiBearerAuth()
     @Post()
     @UseGuards(AuthGuard, RolesGuard)
     async addUserCar(@Body() command: AddUserCarCommand) {
         return await this.userCarRepository.addUserCar(command);//, getUserInfoRequest.user);
     }
 
+    @ApiOperation({ summary: 'Update user-car association' })
+    @ApiBody({ type: UpdateUserCarCommand, description: 'Updated user car data' })
+    @ApiResponse({ status: 200, description: 'User car association updated successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiResponse({ status: 400, description: 'Invalid input' })
+    @ApiBearerAuth()
     @Put()
     @UseGuards(AuthGuard, RolesGuard)
     async updateUserCar(@Body() command: UpdateUserCarCommand) {

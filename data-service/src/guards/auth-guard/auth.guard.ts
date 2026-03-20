@@ -9,7 +9,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
-import { Constants } from 'data-service/src/common/constants/constants';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 

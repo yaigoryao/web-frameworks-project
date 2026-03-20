@@ -8,12 +8,19 @@ import { GetCarQuery } from "../../../repositoires/car-repository/queries/get-ca
 import { AddCarCommand } from "../../../repositoires/car-repository/commands/add-car.command";
 import { UpdateCarCommand } from "../../../repositoires/car-repository/commands/update-car.command";
 import '../../../common/extensions/request.extension';
-import { Routes } from "data-service/src/common/routes/routes";
+import { Routes } from "../../../common/routes/routes";
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 
+@ApiTags(Routes.Owner.Car)
 @Controller(Routes.Owner.Car)
 export class OwnerCarController {
     constructor(private readonly ownerCarService: OwnerCarService) { }
 
+    @ApiOperation({ summary: 'Get owner cars' })
+    @ApiResponse({ status: 200, description: 'List of owner cars', type: CarDto, isArray: true })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Owner only' })
+    @ApiBearerAuth()
     @Get()
     @UseGuards(AuthGuard, OwnerGuard)
     async getCars(@Query() query: GetCarQuery): Promise<(CarDto | null)[]> {

@@ -1,2 +1,2 @@
-import { ILoginResponse } from "@monorepo/shared/src/contracts/responses/login/login.response";
-export interface IRefreshRequest extends ILoginResponse { };
+import { LoginResponse } from "../../../responses/login/login.response";
+export class RefreshRequest extends LoginResponse { };

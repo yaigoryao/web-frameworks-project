@@ -1,16 +1,15 @@
-import { ErrorBuilder, Role, User } from '@monorepo/shared';
+import { RefreshResponse, Role, User } from '@monorepo/shared';
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { IRefreshResponse } from '@monorepo/shared/src/contracts/responses/refresh/refresh.response';
-import { ILoginResponse } from '@monorepo/shared/src/contracts/responses/login/login.response';
-import { ILoginRequest } from '@monorepo/shared';
-import { IRefreshRequest } from '@monorepo/shared';
-import { UserJwtData } from '@monorepo/shared/contracts/dto/user-jwt-data.dto';
-import { IRegisterResponse } from '@monorepo/shared/src/contracts/responses/register/register.response';
-import { IRegisterRequest } from '@monorepo/shared';
+import { LoginResponse } from '@monorepo/shared';
+import { LoginRequest } from '@monorepo/shared';
+import { RefreshRequest } from '@monorepo/shared';
+import { UserJwtData } from '@monorepo/shared';
+import { RegisterResponse } from '@monorepo/shared';
+import { RegisterRequest } from '@monorepo/shared';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 
 @Injectable()
@@ -23,7 +22,7 @@ export class AuthService {
 
     }
 
-    public async login(loginRequest: ILoginRequest): Promise<ILoginResponse> {
+    public async login(loginRequest: LoginRequest): Promise<LoginResponse> {
         //const errBuilder = new ErrorBuilder();
 
         const { login, password } = loginRequest;
@@ -42,13 +41,13 @@ export class AuthService {
         //if (errBuilder.hasErrors()) throw errBuilder.build();
 
         const tokens = await this.refreshUserTokens(user!);
-        return tokens satisfies ILoginResponse;
+        return tokens as LoginResponse;
     }
 
-    public async refresh(refreshRequest: IRefreshRequest): Promise<IRefreshResponse> {
+    public async refresh(refreshRequest: RefreshRequest): Promise<RefreshResponse> {
         //const errBuilder = new ErrorBuilder();
 
-        const { accessToken, refreshToken } = refreshRequest
+        const { accessToken, refreshToken } = refreshRequest;
 
         const { login } = jwt.decode(accessToken) as UserJwtData;
 
@@ -66,11 +65,11 @@ export class AuthService {
         const tokens = await this.refreshUserTokens(user!);
 
         //if (errBuilder.hasErrors()) throw errBuilder.build();
-        return tokens satisfies IRefreshResponse;
+        return tokens as RefreshResponse;
 
     }
 
-    public async register(registerRequest: IRegisterRequest): Promise<IRegisterResponse> {
+    public async register(registerRequest: RegisterRequest): Promise<RegisterResponse> {
 
         //const errBuilder = new ErrorBuilder();
 
@@ -120,10 +119,10 @@ export class AuthService {
         //if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
 
         //if (errBuilder.hasErrors()) throw errBuilder.build();
-        return { login: user!.login } satisfies IRegisterResponse;
+        return { login: user!.login } as RegisterResponse;
     }
 
-    private async refreshUserTokens(user: User): Promise<IRefreshResponse> {
+    private async refreshUserTokens(user: User): Promise<RefreshResponse> {
         try {
             user.refreshToken = crypto.randomUUID();
             await user.save();

@@ -5,12 +5,14 @@ import { CustomerUserService } from "../../../services/user-service/customers/cu
 import { Request } from 'express';
 import { Constants } from "../../../common/constants/constants";
 import '../../../common/extensions/request.extension';
-import { GetRoleQuery } from "data-service/src/repositoires/role-repository/queries/get-role.query";
-import { RoleRepository } from "data-service/src/repositoires/role-repository/role.repository";
-import { RolesGuard } from "data-service/src/guards/role-guard/role.guard";
-import { MapperService } from "data-service/src/services/mapper-service/mapper.service";
-import { Routes } from "data-service/src/common/routes/routes";
+import { GetRoleQuery } from "../../../repositoires/role-repository/queries/get-role.query";
+import { RoleRepository } from "../../../repositoires/role-repository/role.repository";
+import { RolesGuard } from "../../../guards/role-guard/role.guard";
+import { MapperService } from "../../../services/mapper-service/mapper.service";
+import { Routes } from "../../../common/routes/routes";
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 
+@ApiTags(Routes.Manager.Role)
 @Controller(Routes.Manager.Role)
 export class ManagersRoleController {
     constructor(private readonly roleRepository: RoleRepository,
@@ -18,6 +20,11 @@ export class ManagersRoleController {
     ) {
     }
 
+    @ApiOperation({ summary: 'Get all roles' })
+    @ApiResponse({ status: 200, description: 'List of roles', type: RoleDto, isArray: true })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiBearerAuth()
     @Get()
     @UseGuards(AuthGuard, RolesGuard)
     async getUserInfo(@Query() query: GetRoleQuery) {
