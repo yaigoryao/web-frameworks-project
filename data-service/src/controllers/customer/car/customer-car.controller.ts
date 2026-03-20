@@ -4,8 +4,9 @@ import { CustomerCarService } from "../../../services/car-service/customers/cust
 import { CarDto } from "@monorepo/shared";
 import { GetCarQuery } from "../../../repositoires/car-repository/queries/get-car.query";
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('customer/car')
+@Controller(Routes.Customer.Car)
 export class CustomerCarController {
     constructor(private readonly customerCarService: CustomerCarService) { }
 

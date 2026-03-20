@@ -7,7 +7,7 @@ import { MapperService } from './services/mapper-service/mapper.service';
 import { UserMapper } from './services/mapper-service/mapper-handlers/user.mapper'
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CustomersUserController } from './controllers/user/customer/customer-user.controller';
+import { CustomersUserController } from './controllers/customer/user/customer-user.controller';
 import { CarMapper } from './services/mapper-service/mapper-handlers/car.mapper';
 import { OrderMapper } from './services/mapper-service/mapper-handlers/order.mapper';
 import { OrderStatusMapper } from './services/mapper-service/mapper-handlers/order-status.mapper';
@@ -17,14 +17,8 @@ import { IDataMapper } from './services/mapper-service/mapper-handlers/base.mapp
 import { AuthGuard } from './guards/auth-guard/auth.guard';
 import { Dialect } from 'sequelize';
 import { UserRepository } from './repositoires/user-repository/user.repository';
-import { CustomerCarController } from './controllers/car/customer/customer-car.controller';
-import { ManagersCarController } from './controllers/car/manager/manager-car.controller';
-import { OwnerCarController } from './controllers/car/owner/owner-car.controller';
-import { CustomerOrderController } from './controllers/order/customer/customer-order.controller';
-import { ManagersOrderController } from './controllers/order/manager/manager-order.controller';
-import { OwnerOrderController } from './controllers/order/owner/owner-order.controller';
-import { ManagersUserController } from './controllers/user/manager/manager-user.controller';
-import { OwnerUserController } from './controllers/user/owner/owner-user.controller';
+import { CustomerCarController } from './controllers/customer/car/customer-car.controller';
+import { ManagersCarController } from './controllers/manager/car/manager-car.controller';
 import { CarRepository } from './repositoires/car-repository/car.repository';
 import { OrderRepository } from './repositoires/order-repository/order.repository';
 import { OrderStatusRepository } from './repositoires/order-status-repository/order-status.repository';
@@ -41,11 +35,15 @@ import { RolesGuard } from './guards/role-guard/role.guard';
 import { OwnerGuard } from './guards/owner-guard/owner.guard';
 import { DatabaseInitializerService } from './services/database-initializer/database-initializer.service';
 import { AuthorizationService } from './services/authorization-service/authorization.service';
-import { ManagersRoleController } from './controllers/role/manager/manager-role.controller';
-import { ManagersOrderStatusController } from './controllers/order-status/manager/manager-order-status.controller';
 import { UserCarMapper } from './services/mapper-service/mapper-handlers/user-car.mapper';
-import { ManagerUserCarController } from './controllers/user-car/manager/manager-user-car.controller';
 import { UserCarRepository } from './repositoires/user-car-repository/user-car.repository';
+import { OwnerCarController } from './controllers/owner/car/owner-car.controller';
+import { CustomerOrderController } from './controllers/customer/order/customer-order.controller';
+import { OwnerUserController } from './controllers/owner/user/owner-user.controller';
+import { ManagerUserCarController } from './controllers/manager/user-car/manager-user-car.controller';
+import { OwnerOrderController } from './controllers/owner/order/owner-order.controller';
+import { ManagersRoleController } from './controllers/manager/role/manager-role.controller';
+import { ManagersOrderStatusController } from './controllers/manager/order-status/manager-order-status.controller';
 //import { DataModel } from './models/data.model';
 
 export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
@@ -99,8 +97,8 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
     }),
   ],
   controllers: [AppController, CustomersUserController, CustomerCarController, ManagersCarController,
-    OwnerCarController, CustomerOrderController, ManagersOrderController,
-    OwnerOrderController, ManagersUserController, OwnerUserController,
+    OwnerCarController, CustomerOrderController, ManagersCarController,
+    OwnerOrderController, ManagerUserCarController, OwnerUserController,
     ManagersRoleController, ManagersOrderStatusController, ManagerUserCarController],
   providers: [AppService, MapperService, DatabaseInitializerService,
     CustomerUserService, CustomerCarService, ManagersCarService, OwnerCarService, CustomerOrderService,

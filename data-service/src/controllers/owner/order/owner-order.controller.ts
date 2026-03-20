@@ -5,8 +5,9 @@ import { OwnerOrderService } from "../../../services/order-service/owner/owner-o
 import { OrderDto } from "@monorepo/shared";
 import { GetOrderQuery } from "../../../repositoires/order-repository/queries/get-order.query";
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('owner/order')
+@Controller(Routes.Owner.Order)
 export class OwnerOrderController {
     constructor(private readonly ownerOrderService: OwnerOrderService) { }
 

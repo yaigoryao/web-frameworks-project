@@ -82,7 +82,6 @@ export class AuthService {
 
         if (users.length > 0) throw new ConflictException("Данный логин уже занят!");//errBuilder.addErrorMessage('Пользователь с таким логином уже существует');
 
-
         let userRole = await this.roleModel.findOne({
             where: {
                 roleName: "user"

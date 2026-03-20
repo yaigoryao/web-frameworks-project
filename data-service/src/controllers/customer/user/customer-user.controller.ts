@@ -6,8 +6,9 @@ import { CustomerUserService } from "../../../services/user-service/customers/cu
 import { Request } from 'express';
 import { Constants } from "../../../common/constants/constants";
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('customer/user')
+@Controller(Routes.Customer.User)
 export class CustomersUserController {
     constructor(private readonly customerUserService: CustomerUserService) {
     }

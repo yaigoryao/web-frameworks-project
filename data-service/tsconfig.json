@@ -6,7 +6,11 @@
     "outDir": "dist",
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@monorepo/shared": ["../shared/index"]
+    }
   },
   "references": [
     { "path": "../shared" }

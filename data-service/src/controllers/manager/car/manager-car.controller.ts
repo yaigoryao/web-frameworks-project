@@ -8,8 +8,9 @@ import { GetCarQuery } from "../../../repositoires/car-repository/queries/get-ca
 import { AddCarCommand } from "../../../repositoires/car-repository/commands/add-car.command";
 import { UpdateCarCommand } from "../../../repositoires/car-repository/commands/update-car.command";
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('manager/car')
+@Controller(Routes.Manager.Car)
 export class ManagersCarController {
     constructor(private readonly managersCarService: ManagersCarService) { }
 

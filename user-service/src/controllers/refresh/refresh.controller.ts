@@ -12,7 +12,7 @@ export class RefreshController {
     }
 
     @Get()
-    async register(@Req() refreshRequest: Request) {
+    async refersh(@Req() refreshRequest: Request) {
         return await this.authService.refresh(refreshRequest.body);
         // try {
         // }

@@ -9,8 +9,9 @@ import { AddUserCommand } from "../../../repositoires/user-repository/commands/a
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
 import { Request } from 'express';
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('manager/user')
+@Controller(Routes.Manager.User)
 export class ManagersUserController {
     constructor(private readonly managersUserService: ManagersUserService) { }
 

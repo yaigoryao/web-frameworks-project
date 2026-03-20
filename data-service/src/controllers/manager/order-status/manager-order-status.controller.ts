@@ -11,8 +11,9 @@ import { RolesGuard } from "data-service/src/guards/role-guard/role.guard";
 import { OrderStatusRepository } from "data-service/src/repositoires/order-status-repository/order-status.repository";
 import { GetOrderStatusQuery } from "data-service/src/repositoires/order-status-repository/queries/get-order-status.query";
 import { MapperService } from "data-service/src/services/mapper-service/mapper.service";
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('manager/orderstatus')
+@Controller(Routes.Manager.OrderStatus)
 export class ManagersOrderStatusController {
     constructor(private readonly orderStatusRepository: OrderStatusRepository,
         private readonly mapper: MapperService

@@ -9,8 +9,9 @@ import { GetRoleQuery } from "data-service/src/repositoires/role-repository/quer
 import { RoleRepository } from "data-service/src/repositoires/role-repository/role.repository";
 import { RolesGuard } from "data-service/src/guards/role-guard/role.guard";
 import { MapperService } from "data-service/src/services/mapper-service/mapper.service";
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('manager/role')
+@Controller(Routes.Manager.Role)
 export class ManagersRoleController {
     constructor(private readonly roleRepository: RoleRepository,
         private readonly mapper: MapperService

@@ -7,8 +7,9 @@ import { UserUpdateStatus } from "../../../repositoires/user-repository/user.rep
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
 import '../../../common/extensions/request.extension';
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('owner/user')
+@Controller(Routes.Owner.User)
 export class OwnerUserController {
     constructor(private readonly ownerUserService: OwnerUserService) { }
 

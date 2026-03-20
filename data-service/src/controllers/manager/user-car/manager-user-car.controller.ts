@@ -13,8 +13,9 @@ import { UserCarRepository } from "data-service/src/repositoires/user-car-reposi
 import { GetUserCarQuery } from "data-service/src/repositoires/user-car-repository/queries/get-user-car.query";
 import { AddUserCarCommand } from "data-service/src/repositoires/user-car-repository/commands/add-user-car.command";
 import { UpdateUserCarCommand } from "data-service/src/repositoires/user-car-repository/commands/update-user-car.command";
+import { Routes } from "data-service/src/common/routes/routes";
 
-@Controller('manager/usercar')
+@Controller(Routes.Manager.UserCar)
 export class ManagerUserCarController {
     constructor(private readonly userCarRepository: UserCarRepository,
         private readonly mapper: MapperService

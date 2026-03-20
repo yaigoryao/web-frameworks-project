@@ -7,8 +7,15 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "data-service": "^0.1.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^11.2.6",
+    "user-service": "^0.1.0"
   }
 }
