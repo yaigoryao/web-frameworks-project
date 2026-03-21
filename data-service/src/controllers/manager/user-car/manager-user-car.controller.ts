@@ -1,4 +1,4 @@
-import { CustomerUpdateUserRequest, IError, Role, RoleDto, splitErrorMessage, UserCar, UserCarDto } from "@monorepo/shared";
+import { ApiEnumResponse, CustomerUpdateUserRequest, IError, Role, RoleDto, splitErrorMessage, UserCar, UserCarDto } from "@monorepo/shared";
 import { Body, Controller, Get, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { CustomerUserService } from "../../../services/user-service/customers/customers-user.service";
@@ -7,7 +7,7 @@ import { Constants } from "../../../common/constants/constants";
 import '../../../common/extensions/request.extension';
 import { Routes } from "../../../common/routes/routes";
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from "@nestjs/swagger";
-import { UserCarRepository } from "../../../repositoires/user-car-repository/user-car.repository";
+import { UserCarAddStatus, UserCarRepository, UserCarUpdateStatus } from "../../../repositoires/user-car-repository/user-car.repository";
 import { MapperService } from "../../../services/mapper-service/mapper.service";
 import { GetUserCarQuery } from "../../../repositoires/user-car-repository/queries/get-user-car.query";
 import { RolesGuard } from "../../../guards/role-guard/role.guard";
@@ -35,7 +35,7 @@ export class ManagerUserCarController {
 
     @ApiOperation({ summary: 'Add user-car association' })
     @ApiBody({ type: AddUserCarCommand, description: 'User car data to add' })
-    @ApiResponse({ status: 201, description: 'User car association added successfully' })
+    @ApiEnumResponse(UserCarAddStatus, 'Order insertion status', { status: 201 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -48,7 +48,7 @@ export class ManagerUserCarController {
 
     @ApiOperation({ summary: 'Update user-car association' })
     @ApiBody({ type: UpdateUserCarCommand, description: 'Updated user car data' })
-    @ApiResponse({ status: 200, description: 'User car association updated successfully' })
+    @ApiEnumResponse(UserCarUpdateStatus, 'Order update status', { status: 200 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })

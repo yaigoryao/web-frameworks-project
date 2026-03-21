@@ -94,8 +94,8 @@ services:
         -----END RSA PUBLIC KEY-----
       OWNER_LOGIN: admin
       OWNER_PASSWORD: admin123
-      OWNER_NAME: Admin
       OWNER_SURNAME: User
+      OWNER_NAME: Admin
       OWNER_PHONE: "+1234567890"
     ports:
       - "3002:3002"

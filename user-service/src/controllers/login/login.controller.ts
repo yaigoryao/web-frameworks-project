@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { Request } from 'express';
 import { LoginRequest } from '@monorepo/shared';
@@ -14,8 +14,8 @@ export class LoginController {
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     @Get()
-    async login(@Req() request: Request) {
-        return await this.authService.login(request.body as LoginRequest);
+    async login(@Query() query: LoginRequest) {
+        return await this.authService.login(query);
         // try {
         // } catch (error: unknown) {
         //     if (error instanceof Error) {

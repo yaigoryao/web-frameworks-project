@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Query, Body, UseGuards } from "@nestjs/comm
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { RolesGuard } from "../../../guards/role-guard/role.guard";
 import { ManagersOrderService } from "../../../services/order-service/managers/managers-order.service";
-import { OrderDto } from "@monorepo/shared";
+import { ApiEnumResponse, OrderDto } from "@monorepo/shared";
 import { OrderAddStatus, OrderUpdateStatus } from "../../../repositoires/order-repository/order.repository";
 import { GetOrderQuery } from "../../../repositoires/order-repository/queries/get-order.query";
 import { AddOrderCommand } from "../../../repositoires/order-repository/commands/add-order.command";
@@ -29,7 +29,7 @@ export class ManagersOrderController {
 
     @ApiOperation({ summary: 'Add new order' })
     @ApiBody({ type: AddOrderCommand, description: 'Order data to add' })
-    @ApiResponse({ status: 201, description: 'Order added successfully', type: Number })
+    @ApiEnumResponse(OrderAddStatus, 'Order insertion status', { status: 201 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -42,7 +42,7 @@ export class ManagersOrderController {
 
     @ApiOperation({ summary: 'Update order information' })
     @ApiBody({ type: UpdateOrderCommand, description: 'Updated order data' })
-    @ApiResponse({ status: 200, description: 'Order updated successfully', type: Number })
+    @ApiEnumResponse(OrderUpdateStatus, 'Order insertion status', { status: 202 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })

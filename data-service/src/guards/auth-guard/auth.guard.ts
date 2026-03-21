@@ -26,7 +26,10 @@ export class AuthGuard implements CanActivate {
             throw new UnauthorizedException("Отсутствует токен доступа");
         }
         try {
-            const decoded = jwt.verify(token, this.configService.get('JWT_PUBLIC')!, { algorithms: ['RS256'] }) as UserJwtData;
+
+
+            const decoded = jwt.verify(token, this.configService.get('JWT_PUBLIC_KEY')!, { algorithms: ['RS256'] }) as UserJwtData;
+
             request.login = decoded.login;
             // request.user = await this.userModel.findOne({
             //     where: {

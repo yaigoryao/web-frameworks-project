@@ -27,9 +27,6 @@ export class ManagersCarController {
         return await this.managersCarService.getCars(query);
     }
 
-    @ApiOperation({ summary: 'Add new car' })
-    @ApiBody({ type: AddCarCommand, description: 'Car data to add' })
-    @ApiEnumResponse(CarAddStatus, 'Car insertion status', { status: 201 })
     // @ApiResponse({
     //     status: 201, description: 'Car added successfully', schema: {
     //         type: 'integer',
@@ -38,6 +35,9 @@ export class ManagersCarController {
     //         example: CarAddStatus.Success
     //     }
     // })
+    @ApiOperation({ summary: 'Add new car' })
+    @ApiBody({ type: AddCarCommand, description: 'Car data to add' })
+    @ApiEnumResponse(CarAddStatus, 'Car insertion status', { status: 201 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -50,7 +50,7 @@ export class ManagersCarController {
 
     @ApiOperation({ summary: 'Update car information' })
     @ApiBody({ type: UpdateCarCommand, description: 'Updated car data' })
-    @ApiResponse({ status: 200, description: 'Car updated successfully', type: Number })
+    @ApiEnumResponse(CarUpdateStatus, 'Car update status', { status: 200 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })

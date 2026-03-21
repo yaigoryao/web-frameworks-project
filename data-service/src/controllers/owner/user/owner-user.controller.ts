@@ -2,7 +2,7 @@ import { Controller, Get, Put, Query, Body, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { OwnerGuard } from "../../../guards/owner-guard/owner.guard";
 import { OwnerUserService } from "../../../services/user-service/owner/owner-user.service";
-import { UserDto } from "@monorepo/shared";
+import { ApiEnumResponse, UserDto } from "@monorepo/shared";
 import { UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
@@ -28,7 +28,7 @@ export class OwnerUserController {
 
     @ApiOperation({ summary: 'Update owner user information' })
     @ApiBody({ type: UpdateUserCommand, description: 'Updated user data' })
-    @ApiResponse({ status: 200, description: 'User updated successfully', type: Number })
+    @ApiEnumResponse(UserUpdateStatus, 'Order update status', { status: 200 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Owner only' })
     @ApiResponse({ status: 400, description: 'Invalid input' })
