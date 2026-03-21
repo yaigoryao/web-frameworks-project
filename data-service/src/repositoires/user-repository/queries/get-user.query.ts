@@ -3,13 +3,13 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetUserQuery {
-    @ApiPropertyOptional({ description: 'User ID', example: 1 })
+    @ApiPropertyOptional({ description: 'User ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     id: number | null = null;
 
-    @ApiPropertyOptional({ description: 'User login', example: 'john_doe' })
+    @ApiPropertyOptional({ description: 'User login', example: 'john_doe', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)

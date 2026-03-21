@@ -8,37 +8,37 @@ export class UpdateOrderCommand {
     @Type(() => Number)
     id: number = 0;
 
-    @ApiPropertyOptional({ description: 'Order start date', example: '2024-01-01T00:00:00Z' })
+    @ApiPropertyOptional({ description: 'Order start date', example: '2024-01-01T00:00:00Z', type: Date, nullable: true })
     @IsOptional()
     @IsDate()
     @Type(() => Date)
     startDate: Date | null = null;
 
-    @ApiPropertyOptional({ description: 'Order actual end date', example: '2024-01-31T23:59:59Z' })
+    @ApiPropertyOptional({ description: 'Order actual end date', example: '2024-01-31T23:59:59Z', type: Date, nullable: true })
     @IsOptional()
     @IsDate()
     @Type(() => Date)
     endDate: Date | null = null;
 
-    @ApiPropertyOptional({ description: 'Order planned end date', example: '2024-01-15T00:00:00Z' })
+    @ApiPropertyOptional({ description: 'Order planned end date', example: '2024-01-15T00:00:00Z', type: Date, nullable: true })
     @IsOptional()
     @IsDate()
     @Type(() => Date)
     plannedEndDate: Date | null = null;
 
-    @ApiPropertyOptional({ description: 'Order status ID', example: 1 })
+    @ApiPropertyOptional({ description: 'Order status ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     orderStatusId: number | null = null;
 
-    @ApiPropertyOptional({ description: 'Total order price', example: 1500.50 })
+    @ApiPropertyOptional({ description: 'Total order price', example: 1500.50, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     totalPrice: number | null = null;
 
-    @ApiPropertyOptional({ description: 'Order description', example: 'Car rental for business trip' })
+    @ApiPropertyOptional({ description: 'Order description', example: 'Car rental for business trip', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)

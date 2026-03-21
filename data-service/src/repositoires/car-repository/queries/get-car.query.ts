@@ -3,19 +3,19 @@ import { Length, Matches, ValidateIf, IsNumber, IsString, IsOptional } from 'cla
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetCarQuery {
-    @ApiPropertyOptional({ description: 'Car ID', example: 1 })
+    @ApiPropertyOptional({ description: 'Car ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     id: number | null = null;
 
-    @ApiPropertyOptional({ description: 'Car registration number', example: 'ABC123' })
+    @ApiPropertyOptional({ description: 'Car registration number', example: 'ABC123', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
     carNumber: string | null = null;
 
-    @ApiPropertyOptional({ description: 'Vehicle Identification Number (17 chars)', example: 'WVWZZZ3CZ9E123456' })
+    @ApiPropertyOptional({ description: 'Vehicle Identification Number (17 chars)', example: 'WVWZZZ3CZ9E123456', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -34,7 +34,7 @@ export class GetCarQuery {
     @Type(() => Number)
     offset: number = 0;
 
-    @ApiPropertyOptional({ description: 'User ID filter', example: 1 })
+    @ApiPropertyOptional({ description: 'User ID filter', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)

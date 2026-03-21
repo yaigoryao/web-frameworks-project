@@ -3,7 +3,7 @@ import { IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetOrderStatusQuery {
-    @ApiPropertyOptional({ description: 'Order status ID', example: 1 })
+    @ApiPropertyOptional({ description: 'Order status ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)

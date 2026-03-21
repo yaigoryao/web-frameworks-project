@@ -35,7 +35,7 @@ export class AddUserCommand {
     @MinLength(3, { message: 'Surname must be at least 3 characters long' })
     surname: string = '';
 
-    @ApiPropertyOptional({ description: 'User patronymic', minLength: 3, example: 'Alexandrovich' })
+    @ApiPropertyOptional({ description: 'User patronymic', minLength: 3, example: 'Alexandrovich', type: String, nullable: true  })
     @IsOptional()
     @IsString()
     @Type(() => String)

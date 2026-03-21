@@ -3,19 +3,19 @@ import { IsNumber, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetUserCarQuery {
-    @ApiPropertyOptional({ description: 'User ID', example: 1 })
+    @ApiPropertyOptional({ description: 'User ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     userId: number | null = null;
 
-    @ApiPropertyOptional({ description: 'Car ID', example: 1 })
+    @ApiPropertyOptional({ description: 'Car ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     carId: number | null = null;
 
-    @ApiPropertyOptional({ description: 'Currently owns the car', example: true })
+    @ApiPropertyOptional({ description: 'Currently owns the car', example: true, type: Boolean, nullable: true })
     @IsOptional()
     @IsBoolean()
     @Type(() => Boolean)

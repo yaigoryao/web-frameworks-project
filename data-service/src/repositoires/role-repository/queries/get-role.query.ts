@@ -3,7 +3,7 @@ import { IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetRoleQuery {
-    @ApiPropertyOptional({ description: 'Role ID', example: 1 })
+    @ApiPropertyOptional({ description: 'Role ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)

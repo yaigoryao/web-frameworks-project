@@ -8,7 +8,7 @@ export class UpdateOrderStatusCommand {
     @Type(() => Number)
     id: number = 0;
 
-    @ApiPropertyOptional({ description: 'Order status name', example: 'Confirmed' })
+    @ApiPropertyOptional({ description: 'Order status name', example: 'Confirmed', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)

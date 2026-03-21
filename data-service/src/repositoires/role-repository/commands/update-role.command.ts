@@ -8,7 +8,7 @@ export class UpdateRoleCommand {
     @Type(() => Number)
     id: number = 0;
 
-    @ApiPropertyOptional({ description: 'Role name', example: 'Manager' })
+    @ApiPropertyOptional({ description: 'Role name', example: 'Manager', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)

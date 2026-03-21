@@ -8,19 +8,19 @@ export class UpdateCarCommand {
     @Type(() => Number)
     id: number = 0;
 
-    @ApiPropertyOptional({ description: 'Car registration number', example: 'ABC123' })
+    @ApiPropertyOptional({ description: 'Car registration number', example: 'ABC123', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
     carNumber: string | null = null;
 
-    @ApiPropertyOptional({ description: 'Car model name', example: 'Toyota Camry' })
+    @ApiPropertyOptional({ description: 'Car model name', example: 'Toyota Camry', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
     modelName: string | null = null;
 
-    @ApiPropertyOptional({ description: 'Vehicle Identification Number (17 chars)', example: 'WVWZZZ3CZ9E123456' })
+    @ApiPropertyOptional({ description: 'Vehicle Identification Number (17 chars)', example: 'WVWZZZ3CZ9E123456', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -29,7 +29,7 @@ export class UpdateCarCommand {
     @Matches(/^[a-zA-Z0-9]+$/, { message: 'VIN must contain only letters and numbers' })
     vin: string | null = null;
 
-    @ApiPropertyOptional({ description: 'Car color code (0-9)', example: 1, minimum: 0, maximum: 9 })
+    @ApiPropertyOptional({ description: 'Car color code (0-9)', example: 1, minimum: 0, maximum: 9, type: String, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)

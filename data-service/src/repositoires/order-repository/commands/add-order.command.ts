@@ -8,7 +8,7 @@ export class AddOrderCommand {
     @Type(() => Number)
     totalPrice: number = 0;
 
-    @ApiPropertyOptional({ description: 'Order description', example: 'Car rental for business trip' })
+    @ApiPropertyOptional({ description: 'Order description', example: 'Car rental for business trip', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -19,7 +19,7 @@ export class AddOrderCommand {
     @Type(() => Date)
     startDate: Date = new Date();
 
-    @ApiPropertyOptional({ description: 'Order actual end date', example: '2024-01-31T23:59:59Z' })
+    @ApiPropertyOptional({ description: 'Order actual end date', example: '2024-01-31T23:59:59Z', type: Date, nullable: true })
     @IsOptional()
     @IsDate()
     @Type(() => Date)

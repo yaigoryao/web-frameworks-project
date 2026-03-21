@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Query, Body, Req, UseGuards } from "@nestjs
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { RolesGuard } from "../../../guards/role-guard/role.guard";
 import { ManagersUserService } from "../../../services/user-service/managers/managers-user.service";
-import { UserDto } from "@monorepo/shared";
+import { ApiEnumResponse, UserDto } from "@monorepo/shared";
 import { UserAddStatus, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { AddUserCommand } from "../../../repositoires/user-repository/commands/add-user.command";
@@ -36,7 +36,7 @@ export class ManagersUserController {
 
     @ApiOperation({ summary: 'Update user information' })
     @ApiBody({ type: UpdateUserCommand, description: 'Updated user data' })
-    @ApiResponse({ status: 200, description: 'User updated successfully', type: Number })
+    @ApiEnumResponse(UserUpdateStatus, 'User update status', { status: 200 })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
     @ApiResponse({ status: 400, description: 'Invalid input' })

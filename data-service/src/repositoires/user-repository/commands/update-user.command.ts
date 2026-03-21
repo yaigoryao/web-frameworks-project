@@ -8,13 +8,13 @@ export class UpdateUserCommand {
     @Type(() => String)
     login: string = '';
 
-    @ApiPropertyOptional({ description: 'User password (if updating)', example: 'NewPassword123!' })
+    @ApiPropertyOptional({ description: 'User password (if updating)', example: 'NewPassword123!', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
     password: string | null = null;
 
-    @ApiPropertyOptional({ description: 'User first name', minLength: 3, example: 'John' })
+    @ApiPropertyOptional({ description: 'User first name', minLength: 3, example: 'John', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -22,7 +22,7 @@ export class UpdateUserCommand {
     @MinLength(3, { message: 'Name must be at least 3 characters long' })
     name: string | null = null;
 
-    @ApiPropertyOptional({ description: 'User last name', minLength: 3, example: 'Doe' })
+    @ApiPropertyOptional({ description: 'User last name', minLength: 3, example: 'Doe', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -30,7 +30,7 @@ export class UpdateUserCommand {
     @MinLength(3, { message: 'Surname must be at least 3 characters long' })
     surname: string | null = null;
 
-    @ApiPropertyOptional({ description: 'User patronymic', minLength: 3, example: 'Alexandrovich' })
+    @ApiPropertyOptional({ description: 'User patronymic', minLength: 3, example: 'Alexandrovich', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -38,19 +38,19 @@ export class UpdateUserCommand {
     @MinLength(3, { message: 'Patronymic must be at least 3 characters long' })
     patronymic: string | null = null;
 
-    @ApiPropertyOptional({ description: 'User is active', example: true })
+    @ApiPropertyOptional({ description: 'User is active', example: true, type: Boolean, nullable: true })
     @IsOptional()
     @IsBoolean()
     @Type(() => Boolean)
     isActive: boolean | null = null;
 
-    @ApiPropertyOptional({ description: 'User phone number', example: '+1234567890' })
+    @ApiPropertyOptional({ description: 'User phone number', example: '+1234567890', type: String, nullable: true })
     @IsOptional()
     @IsString()
     @Type(() => String)
     phoneNumber: string | null = null;
 
-    @ApiPropertyOptional({ description: 'User role ID', example: 1 })
+    @ApiPropertyOptional({ description: 'User role ID', example: 1, type: Number, nullable: true })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
