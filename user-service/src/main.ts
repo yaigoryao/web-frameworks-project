@@ -12,7 +12,7 @@ async function bootstrap() {
   app.enableCors();
 
   app.enableCors({
-    origin: `http://localhost:${process.env.FRONT_PORT || 5000}`,
+    origin: process.env.FRONTEND_ADDR ?? 'http://localhost:5000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
