@@ -4,20 +4,13 @@ import { AppModule } from './app.module';
 import { configDotenv } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { getCorsOptions } from '@monorepo/shared';
 
 async function bootstrap() {
   configDotenv();
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
-
-  app.enableCors({
-    origin: process.env.FRONTEND_ADDR ?? 'http://localhost:5000',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: 'Content-Type, Authorization',
-  });
-
+  app.enableCors(getCorsOptions(process.env.FRONTEND_ADDR));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -41,7 +34,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swagger);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT || 3002);
+  await app.listen(process.env.PORT || 3002, '0.0.0.0');
 }
 
 bootstrap();
