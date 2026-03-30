@@ -11,21 +11,35 @@ import {
   CustomerGetOrdersRequest,
 } from '../types';
 
-const API_BASE_URL = 'http://localhost:3002';
+// Auth service - port 3001
+const AUTH_API_BASE_URL = 'http://localhost:3001';
+// Data service - port 3002
+const DATA_API_BASE_URL = 'http://localhost:3002';
 
 class ApiService {
-  private client: AxiosInstance;
+  private authClient: AxiosInstance;
+  private dataClient: AxiosInstance;
   private accessToken: string | null = null;
 
   constructor() {
-    this.client = axios.create({
-      baseURL: API_BASE_URL,
+    // Auth client for authentication endpoints
+    this.authClient = axios.create({
+      baseURL: AUTH_API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    this.client.interceptors.request.use(
+    // Data client for all other API endpoints
+    this.dataClient = axios.create({
+      baseURL: DATA_API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Add token to data requests
+    this.dataClient.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (this.accessToken && config.headers) {
           config.headers.Authorization = `Bearer ${this.accessToken}`;
@@ -59,47 +73,47 @@ class ApiService {
     return !!this.accessToken;
   }
 
-  // Auth endpoints
+  // Auth endpoints (user-service on port 3001)
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await this.client.post<LoginResponse>('/auth/login', data);
+    const response = await this.authClient.post<LoginResponse>('/login', data);
     this.setToken(response.data.accessToken);
     localStorage.setItem('refreshToken', response.data.refreshToken);
     return response.data;
   }
 
   async register(data: RegisterRequest): Promise<LoginResponse> {
-    const response = await this.client.post<LoginResponse>('/auth/register', data);
+    const response = await this.authClient.post<LoginResponse>('/register', data);
     this.setToken(response.data.accessToken);
     localStorage.setItem('refreshToken', response.data.refreshToken);
     return response.data;
   }
 
   async refresh(refreshToken: string): Promise<LoginResponse> {
-    const response = await this.client.post<LoginResponse>('/auth/refresh', {
-      refreshToken,
+    const response = await this.authClient.get<LoginResponse>('/refresh', {
+      params: { refreshToken },
     });
     this.setToken(response.data.accessToken);
     return response.data;
   }
 
-  // Customer endpoints
+  // Customer endpoints (data-service on port 3002)
   async getUserInfo(): Promise<User> {
-    const response = await this.client.get<User>('/customer/user');
+    const response = await this.dataClient.get<User>('/customer/user');
     return response.data;
   }
 
   async updateUserInfo(data: CustomerUpdateUserRequest): Promise<User> {
-    const response = await this.client.put<User>('/customer/user', data);
+    const response = await this.dataClient.put<User>('/customer/user', data);
     return response.data;
   }
 
   async getCars(params?: CustomerGetCarsRequest): Promise<Car[]> {
-    const response = await this.client.get<Car[]>('/customer/car', { params });
+    const response = await this.dataClient.get<Car[]>('/customer/car', { params });
     return response.data;
   }
 
   async getOrders(params?: CustomerGetOrdersRequest): Promise<Order[]> {
-    const response = await this.client.get<Order[]>('/customer/order', { params });
+    const response = await this.dataClient.get<Order[]>('/customer/order', { params });
     return response.data;
   }
 }
