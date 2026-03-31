@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { Request } from 'express';
 import { RefreshRequest, RefreshResponse } from '@monorepo/shared';
@@ -15,8 +15,8 @@ export class RefreshController {
     @ApiResponse({ status: 404, description: 'Not found' })
     @ApiResponse({ status: 500, description: 'Internal server error' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @Get()
-    async refersh(@Query() body: RefreshRequest) {
+    @Post()
+    async refersh(@Body() body: RefreshRequest) {
         return await this.authService.refresh(body);
         // try {
         // }

@@ -103,7 +103,7 @@ export class AuthService {
                 surname: registerRequest.surname,
                 patronymic: registerRequest.patronymic ?? null,
                 phoneNumber: registerRequest.phoneNumber,
-                password: await bcrypt.hash(`${registerRequest.password}${salt}`, 10),
+                password: await bcrypt.hash(`${registerRequest.password.trim()}${salt}`, 10),
                 salt: salt,
                 refreshToken: crypto.randomUUID(),
                 roleId: userRole!.id

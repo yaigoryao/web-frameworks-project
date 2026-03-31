@@ -19,7 +19,16 @@ export function getCorsOptions(originRaw: string[] | string | undefined | null):
             'Origin',
             'User-Agent',
             'Cache-Control',
-            'X-Custom-Header',
+            'X-Forwarded-For',
+            'Sentry-Trace',
+            'Baggage',
+            'Cache-Control',
+            'Pragma',
+            'Expires',
+            'Access-Control-Allow-Origin'
         ],
+        exposedHeaders: ['Content-Range', 'X-Content-Range'],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     };
 }

@@ -64,7 +64,7 @@ export class DatabaseInitializerService {
         const ownerPhone = this.configService.get<string>('OWNER_PHONE') || '+0000000000';
 
         const salt = crypto.randomUUID();
-        const hashedPassword = await bcrypt.hash(`${ownerPassword}${salt}`, 10);
+        const hashedPassword = await bcrypt.hash(`${ownerPassword?.trim()}${salt}`, 10);
 
         const owner = this.userModel.build({
             login: ownerLogin,

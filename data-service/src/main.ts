@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { configDotenv } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { getCorsOptions } from '@monorepo/shared';
+import { getCorsOptions, getValidationPipeOptions } from '@monorepo/shared';
 
 async function bootstrap() {
   configDotenv();
@@ -12,18 +12,7 @@ async function bootstrap() {
 
   app.enableCors(getCorsOptions(process.env.FRONTEND_ADDR));
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-        exposeDefaultValues: true,
-      },
-      // whitelist: true,
-      // forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
-    })
-  );
+  app.useGlobalPipes(new ValidationPipe(getValidationPipeOptions()));
 
   const swagger = new DocumentBuilder()
     .setTitle('Data Service')
