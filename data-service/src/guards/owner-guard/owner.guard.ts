@@ -10,6 +10,9 @@ export class OwnerGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
+        if (request.method === 'OPTIONS') {
+            return true;
+        }
         //const user = await this.userModel.findOne({ where: { login: userLogin }, include: [Role] });
         return await this.authorizationService.authorizeUser(request.login, this.requiredRoles);
 
