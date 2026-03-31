@@ -10,10 +10,32 @@ import { getCorsOptions, getValidationPipeOptions } from '@monorepo/shared';
 async function bootstrap() {
   configDotenv();
   const app = await NestFactory.create(AppModule);
+<<<<<<< HEAD
 
   app.enableCors(getCorsOptions(process.env.FRONTEND_ADDR));
 
   app.useGlobalPipes(new ValidationPipe(getValidationPipeOptions()));
+=======
+  
+  // Enable CORS for all origins
+  app.enableCors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Bearer', 'Access-Control-Allow-Origin'],
+    credentials: true,
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        exposeDefaultValues: true,
+      },
+      whitelist: false,
+      forbidUnknownValues: false,
+    })
+  );
+>>>>>>> 73950ab (soled some problems with GET|POST)
 
   const swagger = new DocumentBuilder()
     .setTitle('User Service')

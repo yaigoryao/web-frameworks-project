@@ -8,11 +8,33 @@ import { getCorsOptions, getValidationPipeOptions } from '@monorepo/shared';
 
 async function bootstrap() {
   configDotenv();
+<<<<<<< HEAD
   const app = await NestFactory.create(AppModule);
 
   app.enableCors(getCorsOptions(process.env.FRONTEND_ADDR));
 
   app.useGlobalPipes(new ValidationPipe(getValidationPipeOptions()));
+=======
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Bearer'],
+    },
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        exposeDefaultValues: true,
+      },
+      // whitelist: true,
+      // forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+    })
+  );
+>>>>>>> 73950ab (soled some problems with GET|POST)
 
   const swagger = new DocumentBuilder()
     .setTitle('Data Service')

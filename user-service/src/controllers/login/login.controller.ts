@@ -9,8 +9,8 @@ import { LoginResponse } from '@monorepo/shared';
 export class LoginController {
     constructor(private readonly authService: AuthService) { }
 
-    @ApiOperation({ summary: 'Get current customer user information' })
-    @ApiResponse({ status: 200, description: 'User information retrieved', type: LoginResponse })
+    @ApiOperation({ summary: 'User login' })
+    @ApiResponse({ status: 200, description: 'User logged in successfully', type: LoginResponse })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     @Post()
