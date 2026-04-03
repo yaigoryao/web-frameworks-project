@@ -70,7 +70,7 @@ export class UserRepository {
 
                 let salt = crypto.randomUUID();
                 user.salt = salt;
-                user.password = await bcrypt.hash(`${command.password}${salt}`, 10);
+                user.password = await bcrypt.hash(`${command.password.trim()}${salt}`, 10);
             }
             await user.save();
             return UserUpdateStatus.Success;

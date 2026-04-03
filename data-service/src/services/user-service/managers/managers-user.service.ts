@@ -67,7 +67,7 @@ export class ManagersUserService {
             }
 
             const salt = crypto.randomUUID();
-            const hashedPassword = await bcrypt.hash(`${command.password}${salt}`, 10);
+            const hashedPassword = await bcrypt.hash(`${command.password.trim()}${salt}`, 10);
 
             const addCommand = new AddUserCommand({
                 ...command,

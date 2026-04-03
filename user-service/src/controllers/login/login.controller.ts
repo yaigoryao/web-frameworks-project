@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Body, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { AuthService } from '../../services/auth-service/auth.service';
 import { Request } from 'express';
 import { LoginRequest } from '@monorepo/shared';
@@ -14,13 +14,14 @@ export class LoginController {
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     @Post()
-    async login(@Body() body: LoginRequest) {
-        return await this.authService.login(body);
-    }
-
-    // Keep GET for backwards compatibility, but with simplified validation
-    @Get()
-    async loginGet(@Query('login') login: string, @Query('password') password: string) {
-        return await this.authService.login({ login, password });
+    async login(@Body() query: LoginRequest) {
+        return await this.authService.login(query);
+        // try {
+        // } catch (error: unknown) {
+        //     if (error instanceof Error) {
+        //         return { error: [error.message] } satisfies IError;
+        //     }
+        //     return { error: ['Ошибка входа в аккаунт'] } satisfies IError;
+        // }
     }
 }
