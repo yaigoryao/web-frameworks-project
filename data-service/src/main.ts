@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { configDotenv } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { getCorsOptions, getValidationPipeOptions } from '@monorepo/shared';
+import { getCorsOptions, getValidationPipeOptions, setupSwagger } from '@monorepo/shared';
 
 async function bootstrap() {
   configDotenv();
@@ -22,6 +22,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swagger);
   SwaggerModule.setup('api', app, document);
+
+  setupSwagger(document, app);
 
   await app.listen(process.env.PORT || 3002, '0.0.0.0');
 }

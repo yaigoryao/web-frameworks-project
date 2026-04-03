@@ -50,3 +50,5 @@ export * from './common/utils/enum.utils'
 export * from './common/utils/swagger.utils'
 export * from './common/config/cors.options'
 export * from './common/config/validation-pipe.options'
+
+export * from './common/config/swagger.configure'
