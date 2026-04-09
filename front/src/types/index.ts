@@ -69,6 +69,7 @@ export interface LoginResponse {
 }
 
 export interface CustomerUpdateUserRequest {
+  login: string;
   name?: string;
   surname?: string;
   patronymic?: string;

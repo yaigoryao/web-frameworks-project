@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { CustomerUpdateUserRequest } from '../types';
 import './ProfilePage.css';
 
 export function ProfilePage() {
@@ -25,7 +26,20 @@ export function ProfilePage() {
     setMessage('');
 
     try {
-      const updateData: Record<string, string> = { ...formData };
+      if (!user?.login) {
+        setMessage('Ошибка: информация о пользователе недоступна');
+        setIsLoading(false);
+        return;
+      }
+
+      const updateData: CustomerUpdateUserRequest = {
+        login: user.login,
+        name: formData.name,
+        surname: formData.surname,
+        patronymic: formData.patronymic,
+        phoneNumber: formData.phoneNumber,
+      };
+      
       if (password) {
         updateData.password = password;
       }

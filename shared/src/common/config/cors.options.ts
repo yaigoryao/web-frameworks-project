@@ -8,7 +8,7 @@ export function getCorsOptions(originRaw: string[] | string | undefined | null):
     }
 
     return {
-        origin,
+        origin:"*",
         methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'TRACE', 'CONNECT'],
         credentials: true,
         allowedHeaders: [
