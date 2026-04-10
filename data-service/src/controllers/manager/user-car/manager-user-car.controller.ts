@@ -1,5 +1,5 @@
-import { ApiEnumResponse, CustomerUpdateUserRequest, IError, Role, RoleDto, splitErrorMessage, UserCar, UserCarDto } from "@monorepo/shared";
-import { Body, Controller, Get, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
+import { ApiEnumResponse, CustomerUpdateUserRequest, IError, Role, RoleDto, splitErrorMessage, UserCar, UserCarDto, ManagersDeleteUserCarRequest } from "@monorepo/shared";
+import { Body, Controller, Get, Post, Put, Delete, Query, Req, UseGuards, Param } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { CustomerUserService } from "../../../services/user-service/customers/customers-user.service";
 import { Request } from 'express';
@@ -57,5 +57,18 @@ export class ManagerUserCarController {
     @UseGuards(AuthGuard, RolesGuard)
     async updateUserCar(@Body() command: UpdateUserCarCommand) {
         return await this.userCarRepository.updateUserCar(command);//, getUserInfoRequest.user);
+    }
+
+    @ApiOperation({ summary: 'Delete user-car association' })
+    @ApiResponse({ status: 200, description: 'User-car association deleted successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
+    @ApiResponse({ status: 404, description: 'Association not found' })
+    @ApiBearerAuth()
+    @Delete()
+    @UseGuards(AuthGuard, RolesGuard)
+    async deleteUserCar(@Query() query: ManagersDeleteUserCarRequest): Promise<number> {
+        const result = await this.userCarRepository.deleteUserCar(query.userId, query.carId);
+        return result ? 0 : 1; // 0 = success, 1 = not found
     }
 }

@@ -18,6 +18,12 @@ export enum OrderUpdateStatus {
     Error
 }
 
+export enum OrderDeleteStatus {
+    Success,
+    NotFound,
+    Error
+}
+
 @Injectable()
 export class OrderRepository {
     constructor(
@@ -104,6 +110,20 @@ export class OrderRepository {
         }
         catch (error) {
             return OrderAddStatus.Error;
+        }
+    }
+
+    async deleteOrder(id: number): Promise<OrderDeleteStatus> {
+        try {
+            const order = await this.orderRepository.findOne({ where: { id } });
+            if (!order) {
+                return OrderDeleteStatus.NotFound;
+            }
+            await order.destroy();
+            return OrderDeleteStatus.Success;
+        }
+        catch (error) {
+            return OrderDeleteStatus.Error;
         }
     }
 }

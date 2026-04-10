@@ -76,4 +76,21 @@ export class UserCarRepository {
             return UserCarAddStatus.Error;
         }
     }
+
+    async deleteUserCar(userId: number, carId: number): Promise<boolean> {
+        try {
+            if (!userId || !carId) throw new BadRequestException("Необходимо указать идентификатор пользователя и автомобиля");
+            
+            const whereOptions: WhereOptions = {
+                userId: userId,
+                carId: carId
+            };
+
+            const result = await this.userCarRepository.destroy({ where: whereOptions });
+            return result > 0;
+        }
+        catch (error) {
+            return false;
+        }
+    }
 }

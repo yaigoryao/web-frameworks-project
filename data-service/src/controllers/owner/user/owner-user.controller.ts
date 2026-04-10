@@ -1,11 +1,12 @@
-import { Controller, Get, Put, Query, Body, UseGuards } from "@nestjs/common";
+import { Controller, Get, Put, Delete, Query, Body, Param, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { OwnerGuard } from "../../../guards/owner-guard/owner.guard";
 import { OwnerUserService } from "../../../services/user-service/owner/owner-user.service";
-import { ApiEnumResponse, UserDto } from "@monorepo/shared";
+import { ApiEnumResponse, UserDto, OwnerDeleteUserRequest } from "@monorepo/shared";
 import { UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
+import { Request } from 'express';
 import '../../../common/extensions/request.extension';
 import { Routes } from "../../../common/routes/routes";
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from "@nestjs/swagger";
@@ -37,5 +38,18 @@ export class OwnerUserController {
     @UseGuards(AuthGuard, OwnerGuard)
     async updateUser(@Body() request: UpdateUserCommand): Promise<UserUpdateStatus> {
         return await this.ownerUserService.updateUser(request);
+    }
+
+    @ApiOperation({ summary: 'Delete user' })
+    @ApiResponse({ status: 200, description: 'User deleted successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Owner only or cannot delete yourself' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    @ApiBearerAuth()
+    @Delete(':login')
+    @UseGuards(AuthGuard, OwnerGuard)
+    async deleteUser(@Param('login') login: string, @Req() req: Request): Promise<number> {
+        const deleteReq = new OwnerDeleteUserRequest({ login });
+        return await this.ownerUserService.deleteUser(deleteReq, req.login);
     }
 }

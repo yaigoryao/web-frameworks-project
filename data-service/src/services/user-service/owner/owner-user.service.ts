@@ -1,10 +1,11 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { MapperService } from "../../mapper-service/mapper.service";
-import { UserRepository, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
-import { User, UserDto, Role } from "@monorepo/shared";
+import { UserRepository, UserUpdateStatus, UserDeleteStatus } from "../../../repositoires/user-repository/user.repository";
+import { User, UserDto, Role, OwnerDeleteUserRequest } from "@monorepo/shared";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
+import { DeleteUserCommand } from "../../../repositoires/user-repository/commands/delete-user.command";
 
 @Injectable()
 export class OwnerUserService {
@@ -50,6 +51,36 @@ export class OwnerUserService {
                 throw error;
             }
             throw new InternalServerErrorException("Ошибка при обновлении информации о пользователе");
+        }
+    }
+
+    public async deleteUser(req: OwnerDeleteUserRequest, ownerLogin: string | null): Promise<number> {
+        try {
+            if (!ownerLogin) {
+                throw new BadRequestException("Владелец не найден");
+            }
+
+            const userToDelete = await this.userModel.findOne({ where: { login: req.login }, include: [Role] });
+            if (!userToDelete) {
+                return 1; // not found
+            }
+
+            // Владелец не может удалить себя
+            if (userToDelete.login === ownerLogin) {
+                throw new BadRequestException("Вы не можете удалить себя");
+            }
+
+            const command = new DeleteUserCommand({
+                login: req.login
+            });
+            const result = await this.userRepository.deleteUser(command);
+            return result === UserDeleteStatus.Success ? 0 : 2;
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            console.error("Ошибка при удалении пользователя:", error);
+            return 2; // error
         }
     }
 }

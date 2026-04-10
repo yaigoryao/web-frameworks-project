@@ -1,12 +1,13 @@
 import { Injectable, InternalServerErrorException, ForbiddenException, BadRequestException, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { MapperService } from "../../mapper-service/mapper.service";
-import { UserRepository, UserAddStatus, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
+import { UserRepository, UserAddStatus, UserUpdateStatus, UserDeleteStatus } from "../../../repositoires/user-repository/user.repository";
 import { RoleRepository } from "../../../repositoires/role-repository/role.repository";
-import { User, UserDto, Role } from "@monorepo/shared";
+import { User, UserDto, Role, ManagersDeleteUserRequest } from "@monorepo/shared";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { AddUserCommand } from "../../../repositoires/user-repository/commands/add-user.command";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
+import { DeleteUserCommand } from "../../../repositoires/user-repository/commands/delete-user.command";
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
@@ -113,6 +114,32 @@ export class ManagersUserService {
                 throw error;
             }
             throw new InternalServerErrorException("Ошибка при обновлении информации о пользователе");
+        }
+    }
+
+    public async deleteUser(req: ManagersDeleteUserRequest): Promise<number> {
+        try {
+            const userToDelete = await this.userModel.findOne({ where: { login: req.login }, include: [Role] });
+            if (!userToDelete) {
+                return 1; // not found
+            }
+
+            // Менеджер может удалять только пользователей с ролью "user"
+            if (userToDelete.role?.roleName?.toLowerCase() !== 'user') {
+                throw new ForbiddenException("Менеджер может удалять только обычных пользователей");
+            }
+
+            const command = new DeleteUserCommand({
+                login: req.login
+            });
+            const result = await this.userRepository.deleteUser(command);
+            return result === UserDeleteStatus.Success ? 0 : 2;
+        } catch (error) {
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
+            console.error("Ошибка при удалении пользователя:", error);
+            return 2; // error
         }
     }
 }

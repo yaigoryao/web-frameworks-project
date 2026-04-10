@@ -45,6 +45,7 @@ import { OwnerOrderController } from './controllers/owner/order/owner-order.cont
 import { ManagersRoleController } from './controllers/manager/role/manager-role.controller';
 import { ManagersOrderStatusController } from './controllers/manager/order-status/manager-order-status.controller';
 import { ManagersUserController } from './controllers/manager/user/manager-user.controller';
+import { ManagersOrderController } from './controllers/manager/order/manager-order.controller';
 import { OwnerUsersController } from './controllers/owner/users/owner-users.controller';
 import { OwnerUsersCheckController } from './controllers/owner/users/owner-users-check.controller';
 import { ManagerUsersController } from './controllers/manager/users/manager-users.controller';
@@ -102,7 +103,7 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
     }),
   ],
   controllers: [AppController, CustomersUserController, CustomerCarController, ManagersCarController,
-    OwnerCarController, CustomerOrderController, ManagersCarController,
+    OwnerCarController, CustomerOrderController, ManagersOrderController,
     OwnerOrderController, ManagerUserCarController, OwnerUserController,
     ManagersRoleController, ManagersOrderStatusController, ManagerUserCarController,
     ManagersUserController, OwnerUsersController, OwnerUsersCheckController,

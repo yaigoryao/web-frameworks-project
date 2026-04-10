@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { MapperService } from "../../mapper-service/mapper.service";
 import { CarRepository, CarAddStatus, CarUpdateStatus } from "../../../repositoires/car-repository/car.repository";
-import { Car, CarDto } from "@monorepo/shared";
+import { UserCarRepository } from "../../../repositoires/user-car-repository/user-car.repository";
+import { Car, CarDto, ManagersDeleteUserCarRequest } from "@monorepo/shared";
 import { GetCarQuery } from "../../../repositoires/car-repository/queries/get-car.query";
 import { AddCarCommand } from "../../../repositoires/car-repository/commands/add-car.command";
 import { UpdateCarCommand } from "../../../repositoires/car-repository/commands/update-car.command";
@@ -10,6 +11,7 @@ import { UpdateCarCommand } from "../../../repositoires/car-repository/commands/
 export class ManagersCarService {
     constructor(
         private readonly carRepository: CarRepository,
+        private readonly userCarRepository: UserCarRepository,
         private readonly mapper: MapperService
     ) { }
 
@@ -38,6 +40,17 @@ export class ManagersCarService {
         }
         catch (error) {
             throw new InternalServerErrorException("Ошибка при обновлении информации о машине");
+        }
+    }
+
+    public async deleteUserCar(req: ManagersDeleteUserCarRequest): Promise<number> {
+        try {
+            const result = await this.userCarRepository.deleteUserCar(req.userId, req.carId);
+            return result ? 0 : 1; // 0 = success, 1 = not found / error
+        }
+        catch (error) {
+            console.error("Ошибка при удалении связи пользователя и машины:", error);
+            return 2; // error
         }
     }
 }

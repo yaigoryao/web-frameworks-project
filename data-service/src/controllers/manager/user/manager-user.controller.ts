@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Query, Body, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Query, Body, Param, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { RolesGuard } from "../../../guards/role-guard/role.guard";
 import { ManagersUserService } from "../../../services/user-service/managers/managers-user.service";
-import { ApiEnumResponse, UserDto } from "@monorepo/shared";
+import { ApiEnumResponse, UserDto, ManagersDeleteUserRequest } from "@monorepo/shared";
 import { UserAddStatus, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { AddUserCommand } from "../../../repositoires/user-repository/commands/add-user.command";
@@ -45,5 +45,18 @@ export class ManagersUserController {
     @UseGuards(AuthGuard, RolesGuard)
     async updateUser(@Body() request: UpdateUserCommand, @Req() req: Request): Promise<UserUpdateStatus> {
         return await this.managersUserService.updateUser(request, req.login);
+    }
+
+    @ApiOperation({ summary: 'Delete user' })
+    @ApiResponse({ status: 200, description: 'User deleted successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Manager role required or cannot delete this user' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    @ApiBearerAuth()
+    @Delete(':login')
+    @UseGuards(AuthGuard, RolesGuard)
+    async deleteUser(@Param('login') login: string): Promise<number> {
+        const req = new ManagersDeleteUserRequest({ login });
+        return await this.managersUserService.deleteUser(req);
     }
 }
