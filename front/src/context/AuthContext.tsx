@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, RegisterRequest } from '../types';
+import { User, LoginRequest, RegisterRequest, CustomerUpdateUserRequest } from '../types';
 import { api } from '../services/api';
 
 interface AuthContextType {
@@ -55,12 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = async (data: Partial<User>) => {
     try {
-      const updatePayload: Record<string, string | undefined> = {
-        name: data.name,
-        surname: data.surname,
-        patronymic: data.patronymic,
-        phoneNumber: data.phoneNumber,
+      const updatePayload: CustomerUpdateUserRequest = {
+        login: data.login || '',
+        name: data.name ?? null,
+        surname: data.surname ?? null,
+        patronymic: data.patronymic ?? null,
+        phoneNumber: data.phoneNumber ?? null,
       };
+      if (data.password) {
+        updatePayload.password = data.password;
+      }
       await api.updateUserInfo(updatePayload);
       await refreshUser();
     } catch (error) {

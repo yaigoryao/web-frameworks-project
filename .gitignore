@@ -57,6 +57,8 @@ dev.db
 *.temp
 .cache/
 
+docs/
+
 *.md
 *.sh
 *.bat

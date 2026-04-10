@@ -5,13 +5,15 @@ import './Layout.css';
 
 interface LayoutProps {
   children: ReactNode;
+  allowedRoles?: string[];
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, allowedRoles = [] }: LayoutProps) {
   const { user, logout, isAuthenticated } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
+  const canSeeUsers = allowedRoles.includes('owner') || allowedRoles.includes('manager');
 
   return (
     <div className="layout">
@@ -30,6 +32,11 @@ export function Layout({ children }: LayoutProps) {
             <Link to="/orders" className={isActive('/orders') ? 'active' : ''}>
               Orders
             </Link>
+            {canSeeUsers && (
+              <Link to="/users" className={isActive('/users') ? 'active' : ''}>
+                Users
+              </Link>
+            )}
             <Link to="/profile" className={isActive('/profile') ? 'active' : ''}>
               Profile
             </Link>
@@ -41,6 +48,11 @@ export function Layout({ children }: LayoutProps) {
               <span className="user-name">
                 {user?.name} {user?.surname}
               </span>
+              {user?.role?.roleName && (
+                <span className={`user-role-badge role-${user.role.roleName.toLowerCase()}`}>
+                  {user.role.roleName}
+                </span>
+              )}
               <button onClick={logout} className="btn-logout">
                 Logout
               </button>

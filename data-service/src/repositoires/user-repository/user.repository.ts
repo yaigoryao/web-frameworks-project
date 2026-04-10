@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Role, User } from '@monorepo/shared';
-import { WhereOptions } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { GetUserQuery } from './queries/get-user.query';
 import { UpdateUserCommand } from './commands/update-user.command';
 import { DeleteUserCommand } from './commands/delete-user.command';
@@ -40,6 +40,36 @@ export class UserRepository {
         }
 
         return this.userRepository.findOne({ where: whereOptions, include: [Role] });
+    }
+
+    async getUsers(options: {
+        role?: string;
+        search?: string;
+        limit?: number;
+        offset?: number;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<{ users: User[]; total: number }> {
+        let whereOptions: any = {};
+        
+                if (options.search) {
+            const searchPattern = `%${options.search}%`;
+            whereOptions[Op.or] = [
+                { login: { [Op.like]: searchPattern } },
+                { name: { [Op.like]: searchPattern } },
+                { surname: { [Op.like]: searchPattern } },
+            ];
+        }
+
+        const { count, rows } = await this.userRepository.findAndCountAll({
+            where: whereOptions,
+            include: [Role],
+            limit: options.limit || 10,
+            offset: options.offset || 0,
+            order: options.sortBy ? [[options.sortBy, options.sortOrder || 'desc']] : [['createdAt', 'desc']],
+        });
+
+        return { users: rows, total: count };
     }
 
     async updateUser(command: UpdateUserCommand): Promise<UserUpdateStatus> {

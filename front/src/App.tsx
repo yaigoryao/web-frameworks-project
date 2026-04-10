@@ -8,9 +8,12 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CarsPage } from './pages/CarsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UsersPage } from './pages/UsersPage';
+import { Toast } from './components/Toast';
+import { useToast } from './components/Toast';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return <div className="loading">Загрузка...</div>;
@@ -18,6 +21,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && user?.role?.roleName) {
+    const userRole = user.role.roleName.toLowerCase();
+    if (!allowedRoles.includes(userRole)) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;
@@ -38,8 +48,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
+  const { user } = useAuth();
+  const { toasts, removeToast } = useToast();
+  const userRole = user?.role?.roleName?.toLowerCase() || '';
+  
+  const canManageUsers = userRole === 'owner' || userRole === 'manager';
+
   return (
-    <Layout>
+    <Layout allowedRoles={canManageUsers ? [userRole] : []}>
       <Routes>
         <Route
           path="/"
@@ -94,10 +110,19 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'manager']}>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="*"
           element={<Navigate to="/" replace />}
         />
       </Routes>
+      <Toast toasts={toasts} onRemove={removeToast} />
     </Layout>
   );
 }

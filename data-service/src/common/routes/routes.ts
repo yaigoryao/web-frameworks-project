@@ -7,6 +7,7 @@ export namespace Routes {
         export const OrderStatus = `${Root}/orderstatus`;
         export const Role = `${Root}/role`;
         export const User = `${Root}/user`;
+        export const Users = `${Root}/users`;
         export const UserCar = `${Root}/usercar`;
     }
 
@@ -17,6 +18,7 @@ export namespace Routes {
         export const OrderStatus = `${Root}/orderstatus`;
         export const Role = `${Root}/role`;
         export const User = `${Root}/user`;
+        export const Users = `${Root}/users`;
         export const UserCar = `${Root}/usercar`;
     }
 

@@ -1,3 +1,5 @@
+export type UserRole = 'owner' | 'manager' | 'client';
+
 export interface User {
   id: number;
   login: string;
@@ -8,6 +10,7 @@ export interface User {
   phoneNumber: string;
   roleId: number;
   role: Role;
+  createdAt?: string;
 }
 
 export interface Role {
@@ -70,11 +73,11 @@ export interface LoginResponse {
 
 export interface CustomerUpdateUserRequest {
   login: string;
-  name?: string;
-  surname?: string;
-  patronymic?: string;
-  phoneNumber?: string;
-  password?: string;
+  name: string | null;
+  surname: string | null;
+  patronymic: string | null;
+  phoneNumber: string | null;
+  password?: string | null;
 }
 
 export interface CustomerGetCarsRequest {
@@ -88,6 +91,31 @@ export interface CustomerGetOrdersRequest {
   orderStatusId?: number | null;
   limit?: number;
   offset?: number;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  surname: string;
+  patronymic?: string;
+  login: string;
+  password: string;
+  phoneNumber?: string;
+  role: 'manager' | 'client';
+}
+
+export interface CreateUserResponse {
+  id: number;
+}
+
+export interface UserListResponse {
+  users: User[];
+  total: number;
+}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  status?: number;
 }
 
 export const COLOR_MAP: Record<number, { name: string; hex: string }> = {
@@ -110,4 +138,16 @@ export const ORDER_STATUS_MAP: Record<string, string> = {
   cancelled: 'Отменён',
   deleted: 'Удалён',
   waiting_car: 'Ожидание машины',
+};
+
+export const ROLE_NAMES: Record<string, string> = {
+  owner: 'Владелец',
+  manager: 'Менеджер',
+  client: 'Клиент',
+};
+
+export const ALLOWED_ROLES: Record<string, ('manager' | 'client')[]> = {
+  owner: ['manager', 'client'],
+  manager: ['client'],
+  client: [],
 };

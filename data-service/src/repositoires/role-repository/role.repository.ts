@@ -22,12 +22,32 @@ export class RoleRepository {
     constructor(
         @InjectModel(Role) private readonly roleRepository: typeof Role) { }
 
-    async getRole(query: GetRoleQuery): Promise<Role[]> {
+    async getRole(query: GetRoleQuery): Promise<Role | null> {
         const whereOptions: WhereOptions = {};
         if (query.id) {
             whereOptions.id = query.id;
         }
-        return this.roleRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
+        return this.roleRepository.findOne({ where: whereOptions });
+    }
+
+    async getRoles(query: GetRoleQuery): Promise<{ roles: Role[]; total: number }> {
+        const whereOptions: WhereOptions = {};
+        if (query.id) {
+            whereOptions.id = query.id;
+        }
+
+        const { count, rows } = await this.roleRepository.findAndCountAll({
+            where: whereOptions,
+            limit: query.limit > 0 ? query.limit : undefined,
+            offset: query.offset,
+            order: [['id', 'asc']]
+        });
+
+        return { roles: rows, total: count };
+    }
+
+    async findRoleByName(roleName: string): Promise<Role | null> {
+        return this.roleRepository.findOne({ where: { roleName } });
     }
 
     async updateRole(command: UpdateRoleCommand): Promise<RoleUpdateStatus> {

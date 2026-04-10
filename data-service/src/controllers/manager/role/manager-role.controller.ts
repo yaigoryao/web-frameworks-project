@@ -27,7 +27,12 @@ export class ManagersRoleController {
     @ApiBearerAuth()
     @Get()
     @UseGuards(AuthGuard, RolesGuard)
-    async getUserInfo(@Query() query: GetRoleQuery) {
-        return await this.mapper.toDtos<Role, RoleDto>(await this.roleRepository.getRole(query));//, getUserInfoRequest.user);
+    async getUserInfo(@Query() query: GetRoleQuery): Promise<{ roles: RoleDto[]; total: number }> {
+        const { roles, total } = await this.roleRepository.getRoles(query);
+        return {
+            roles: this.mapper.toDtos<Role, RoleDto>(roles).filter((role): role is RoleDto => role !== null),
+            total
+        };
     }
 }
+

@@ -34,10 +34,10 @@ export function ProfilePage() {
 
       const updateData: CustomerUpdateUserRequest = {
         login: user.login,
-        name: formData.name,
-        surname: formData.surname,
-        patronymic: formData.patronymic,
-        phoneNumber: formData.phoneNumber,
+        name: formData.name || null,
+        surname: formData.surname || null,
+        patronymic: formData.patronymic || null,
+        phoneNumber: formData.phoneNumber || null,
       };
       
       if (password) {

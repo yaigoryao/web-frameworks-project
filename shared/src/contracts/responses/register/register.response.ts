@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { LoginResponse } from "../../responses/login/login.response";
 
-export class RegisterResponse {
-    @ApiProperty({ description: 'User login', example: 'user123' })
-    declare login: string;
-}
+export class RegisterResponse extends LoginResponse {}
+

@@ -119,7 +119,10 @@ export class AuthService {
         //if (user === null) errBuilder.addErrorMessage('Ошибка создания пользователя');
 
         //if (errBuilder.hasErrors()) throw errBuilder.build();
-        return { login: user!.login } as RegisterResponse;
+
+        // После успешной регистрации возвращаем токены, чтобы пользователь автоматически вошел в систему
+        const tokens = await this.refreshUserTokens(user!);
+        return tokens as RegisterResponse;
     }
 
     private async refreshUserTokens(user: User): Promise<RefreshResponse> {
@@ -140,3 +143,4 @@ export class AuthService {
         }
     }
 }
+

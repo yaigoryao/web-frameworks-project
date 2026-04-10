@@ -45,6 +45,10 @@ import { OwnerOrderController } from './controllers/owner/order/owner-order.cont
 import { ManagersRoleController } from './controllers/manager/role/manager-role.controller';
 import { ManagersOrderStatusController } from './controllers/manager/order-status/manager-order-status.controller';
 import { ManagersUserController } from './controllers/manager/user/manager-user.controller';
+import { OwnerUsersController } from './controllers/owner/users/owner-users.controller';
+import { OwnerUsersCheckController } from './controllers/owner/users/owner-users-check.controller';
+import { ManagerUsersController } from './controllers/manager/users/manager-users.controller';
+import { ManagerUsersCheckController } from './controllers/manager/users/manager-users-check.controller';
 //import { DataModel } from './models/data.model';
 
 export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
@@ -101,7 +105,8 @@ export const MAPPERS_TOKEN = 'ALL_MAPPERS_TOKEN';
     OwnerCarController, CustomerOrderController, ManagersCarController,
     OwnerOrderController, ManagerUserCarController, OwnerUserController,
     ManagersRoleController, ManagersOrderStatusController, ManagerUserCarController,
-    ManagersUserController],
+    ManagersUserController, OwnerUsersController, OwnerUsersCheckController,
+    ManagerUsersController, ManagerUsersCheckController],
   providers: [AppService, MapperService, DatabaseInitializerService,
     CustomerUserService, CustomerCarService, ManagersCarService, OwnerCarService, CustomerOrderService,
     ManagersOrderService, OwnerOrderService, ManagersUserService, OwnerUserService,

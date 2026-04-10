@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import {
   User,
   Car,
@@ -9,6 +9,10 @@ import {
   CustomerUpdateUserRequest,
   CustomerGetCarsRequest,
   CustomerGetOrdersRequest,
+  CreateUserRequest,
+  CreateUserResponse,
+  UserListResponse,
+  ApiError,
 } from '../types';
 
 // Auth service - port 3001
@@ -20,6 +24,8 @@ class ApiService {
   private authClient: AxiosInstance;
   private dataClient: AxiosInstance;
   private accessToken: string | null = null;
+  private isRefreshing = false;
+  private refreshSubscribers: ((token: string) => void)[] = [];
 
   constructor() {
     // Auth client for authentication endpoints
@@ -48,7 +54,68 @@ class ApiService {
       }
     );
 
+    // Handle 401 and token refresh
+    this.dataClient.interceptors.response.use(
+      (response) => response,
+      async (error: AxiosError) => {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && originalRequest && !this.isRefreshing) {
+          this.isRefreshing = true;
+          try {
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+              const response = await this.refresh(refreshToken);
+              this.isRefreshing = false;
+              this.refreshSubscribers.forEach((cb) => cb(response.accessToken));
+              this.refreshSubscribers = [];
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+              }
+              return this.dataClient(originalRequest);
+            }
+          } catch {
+            this.isRefreshing = false;
+            this.clearToken();
+            window.location.href = '/login';
+            return Promise.reject(error);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
     this.loadToken();
+  }
+
+  private subscribeTokenRefresh(cb: (token: string) => void): void {
+    this.refreshSubscribers.push(cb);
+  }
+
+  private async withRetry<T>(
+    fn: () => Promise<T>,
+    retries = 3,
+    delay = 1000
+  ): Promise<T> {
+    let lastError: Error | null = null;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error as Error;
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+          if (status === 401 || status === 403 || status === 404 || status === 422) {
+            throw error;
+          }
+          if (error.code === 'ECONNABORTED' || !error.response) {
+            await new Promise((res) => setTimeout(res, delay * (i + 1)));
+            continue;
+          }
+        }
+        throw error;
+      }
+    }
+    throw lastError || new Error('Request failed');
   }
 
   private loadToken(): void {
@@ -89,8 +156,9 @@ class ApiService {
   }
 
   async refresh(refreshToken: string): Promise<LoginResponse> {
-    const response = await this.authClient.get<LoginResponse>('/refresh', {
-      params: { refreshToken },
+    const response = await this.authClient.post<LoginResponse>('/refresh', {
+      accessToken: this.accessToken,
+      refreshToken,
     });
     this.setToken(response.data.accessToken);
     return response.data;
@@ -102,9 +170,10 @@ class ApiService {
     return response.data;
   }
 
-  async updateUserInfo(data: CustomerUpdateUserRequest): Promise<User> {
-    const response = await this.dataClient.put<User>('/customer/user', data);
-    return response.data;
+  async updateUserInfo(data: CustomerUpdateUserRequest): Promise<boolean> {
+    const response = await this.dataClient.put<number>('/customer/user', data);
+    // UserUpdateStatus: 0 = Success, 1 = NotFound, 2 = Error
+    return response.data === 0;
   }
 
   async getCars(params?: CustomerGetCarsRequest): Promise<Car[]> {
@@ -115,6 +184,89 @@ class ApiService {
   async getOrders(params?: CustomerGetOrdersRequest): Promise<Order[]> {
     const response = await this.dataClient.get<Order[]>('/customer/order', { params });
     return response.data;
+  }
+
+  parseApiError(error: unknown): ApiError {
+    if (error instanceof AxiosError && error.response?.data) {
+      return {
+        message: error.response.data.message || 'Произошла ошибка',
+        code: error.response.data.code,
+        status: error.response.status,
+      };
+    }
+    if (error instanceof Error) {
+      return { message: error.message };
+    }
+    return { message: 'Неизвестная ошибка' };
+  }
+
+  async getUsers(params?: {
+    role?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<UserListResponse> {
+    // Use /manager/users for managers, /owner/users for owners
+    const userRole = this.getUserRole();
+    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
+    const response = await this.dataClient.get<UserListResponse>(endpoint, { params });
+    return response.data;
+  }
+
+  async createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
+    // Use /manager/users for managers, /owner/users for owners
+    const userRole = this.getUserRole();
+    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
+    const response = await this.dataClient.post<CreateUserResponse>(endpoint, data);
+    return response.data;
+  }
+
+  async checkEmailAvailability(login: string): Promise<{ available: boolean }> {
+    // Use /manager/users for managers, /owner/users for owners
+    const userRole = this.getUserRole();
+    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
+    const response = await this.dataClient.get<{ available: boolean }>(`${endpoint}/check-login`, {
+      params: { login },
+    });
+    return response.data;
+  }
+
+  async deleteUser(userId: number): Promise<void> {
+    const userRole = this.getUserRole();
+    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
+    await this.dataClient.delete(`${endpoint}/${userId}`);
+  }
+
+  async updateUserStatus(userId: number, isActive: boolean): Promise<User> {
+    const userRole = this.getUserRole();
+    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
+    const response = await this.dataClient.patch<User>(`${endpoint}/${userId}/status`, { isActive });
+    return response.data;
+  }
+
+  private getUserRole(): string {
+    const token = this.accessToken;
+    if (!token) return 'client';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role?.toLowerCase() || 'client';
+    } catch {
+      return 'client';
+    }
+  }
+
+  isOwner(): boolean {
+    return this.accessToken !== null;
+  }
+
+  isManager(): boolean {
+    return this.accessToken !== null;
+  }
+
+  isClient(): boolean {
+    return this.accessToken !== null;
   }
 }
 

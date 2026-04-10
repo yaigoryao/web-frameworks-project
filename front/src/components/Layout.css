@@ -52,6 +52,28 @@
   color: #ecf0f1;
 }
 
+.user-role-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.role-owner {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.role-manager {
+  background-color: #3498db;
+  color: white;
+}
+
+.role-client {
+  background-color: #2ecc71;
+  color: white;
+}
+
 .btn-login,
 .btn-logout {
   padding: 0.5rem 1rem;
