@@ -7,6 +7,7 @@ import { UpdateUserCommand } from './commands/update-user.command';
 import { DeleteUserCommand } from './commands/delete-user.command';
 import { AddUserCommand } from './commands/add-user.command';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 export enum UserAddStatus {
     Success,
@@ -32,11 +33,14 @@ export class UserRepository {
 
     async getUser(query: GetUserQuery): Promise<User | null> {
         const whereOptions: WhereOptions = {};
-        if (query.id) {
+        if (query.id != null && Number(query.id) > 0) {
             whereOptions.id = query.id;
         }
-        if (query.login) {
-            whereOptions.login = query.login;
+        if (query.login?.trim()) {
+            whereOptions.login = query.login.trim();
+        }
+        if (Object.keys(whereOptions).length === 0) {
+            return null;
         }
 
         return this.userRepository.findOne({ where: whereOptions, include: [Role] });
@@ -107,14 +111,13 @@ export class UserRepository {
             if (command.phoneNumber !== null) {
                 user.phoneNumber = command.phoneNumber;
             }
-            if (command.roleId !== null) {
+            if (command.roleId != null && command.roleId > 0) {
                 user.roleId = command.roleId;
             }
-            if (command.password !== null) {
-
-                let salt = crypto.randomUUID();
+            if (command.password !== null && command.password !== undefined && String(command.password).trim() !== '') {
+                const salt = crypto.randomUUID();
                 user.salt = salt;
-                user.password = await bcrypt.hash(`${command.password.trim()}${salt}`, 10);
+                user.password = await bcrypt.hash(`${String(command.password).trim()}${salt}`, 10);
             }
             await user.save();
             return UserUpdateStatus.Success;

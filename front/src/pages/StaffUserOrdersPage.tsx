@@ -148,10 +148,16 @@ export function StaffUserOrdersPage() {
   };
 
   const removeOrder = async (o: Order) => {
-    if (!window.confirm(`Удалить заказ #${o.id}?`)) return;
+    if (
+      !window.confirm(
+        `Пометить заказ #${o.id} как удалённый? Запись останется в системе со статусом «удалён».`
+      )
+    ) {
+      return;
+    }
     try {
       await api.deleteStaffOrder(o.id);
-      success('Заказ удалён');
+      success('Заказ помечен как удалённый');
       await load();
     } catch (err) {
       showError(api.parseApiError(err).message);
@@ -216,7 +222,7 @@ export function StaffUserOrdersPage() {
                   Изменить
                 </Button>
                 <Button size="small" color="error" startIcon={<DeleteOutlineIcon />} onClick={() => removeOrder(o)}>
-                  Удалить
+                  Пометить удалённым
                 </Button>
               </CardActions>
             </Card>

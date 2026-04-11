@@ -240,7 +240,9 @@ class ApiService {
     const base = this.getUserRole() === 'owner' ? '/owner/order' : '/manager/order';
     const response = await this.dataClient.delete<number>(`${base}/${orderId}`);
     if (response.data !== 0) {
-      throw new Error(response.data === 1 ? 'Заказ не найден' : 'Не удалось удалить заказ');
+      throw new Error(
+        response.data === 1 ? 'Заказ не найден' : 'Не удалось пометить заказ как удалённый'
+      );
     }
   }
 

@@ -27,7 +27,9 @@ export enum OrderDeleteStatus {
 @Injectable()
 export class OrderRepository {
     constructor(
-        @InjectModel(Order) private readonly orderRepository: typeof Order) { }
+        @InjectModel(Order) private readonly orderRepository: typeof Order,
+        @InjectModel(OrderStatus) private readonly orderStatusModel: typeof OrderStatus,
+    ) { }
 
     async getOrders(query: GetOrderQuery): Promise<Order[]> {
         const whereOptions: WhereOptions = {};
@@ -57,7 +59,14 @@ export class OrderRepository {
             }
             //whereOptions['$User.login$'] = query.userLogin;
         }
-        return this.orderRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset, include: [OrderStatus, Car] });
+        const opts: Record<string, unknown> = { where: whereOptions, include: [OrderStatus, Car] };
+        if (query.limit > 0) {
+            opts.limit = query.limit;
+        }
+        if (query.offset > 0) {
+            opts.offset = query.offset;
+        }
+        return this.orderRepository.findAll(opts as any);
     }
 
     async updateOrder(command: UpdateOrderCommand): Promise<OrderUpdateStatus> {
@@ -113,13 +122,21 @@ export class OrderRepository {
         }
     }
 
+    /** Не удаляет строку: выставляет статус `deleted` (как в предметной области). */
     async deleteOrder(id: number): Promise<OrderDeleteStatus> {
         try {
             const order = await this.orderRepository.findOne({ where: { id } });
             if (!order) {
                 return OrderDeleteStatus.NotFound;
             }
-            await order.destroy();
+            const deletedStatus = await this.orderStatusModel.findOne({
+                where: { orderStatusName: 'deleted' },
+            });
+            if (!deletedStatus) {
+                return OrderDeleteStatus.Error;
+            }
+            order.orderStatusId = deletedStatus.id;
+            await order.save();
             return OrderDeleteStatus.Success;
         }
         catch (error) {

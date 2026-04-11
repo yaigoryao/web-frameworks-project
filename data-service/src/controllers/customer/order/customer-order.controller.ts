@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Query, Body, Param, Req, UseGuards, HttpCode } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Query, Body, Param, Req, UseGuards, HttpCode, ParseIntPipe } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { CustomerOrderService } from "../../../services/order-service/customers/customers-order.service";
 import { OrderDto, CustomersAddOrderRequest, CustomersUpdateOrderRequest, CustomersDeleteOrderRequest } from "@monorepo/shared";
@@ -56,7 +56,7 @@ export class CustomerOrderController {
     @ApiBearerAuth()
     @Delete(':id')
     @UseGuards(AuthGuard)
-    async deleteOrder(@Param('id') id: number, @Req() request: Request): Promise<number> {
+    async deleteOrder(@Param('id', ParseIntPipe) id: number, @Req() request: Request): Promise<number> {
         return await this.customerOrderService.deleteOrder(id, request.login || '');
     }
 }

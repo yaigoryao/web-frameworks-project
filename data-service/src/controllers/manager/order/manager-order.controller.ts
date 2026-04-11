@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Query, Body, Param, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Query, Body, Param, UseGuards, ParseIntPipe } from "@nestjs/common";
 import { AuthGuard } from "../../../guards/auth-guard/auth.guard";
 import { RolesGuard } from "../../../guards/role-guard/role.guard";
 import { ManagersOrderService } from "../../../services/order-service/managers/managers-order.service";
@@ -61,7 +61,7 @@ export class ManagersOrderController {
     @ApiBearerAuth()
     @Delete(':id')
     @UseGuards(AuthGuard, RolesGuard)
-    async deleteOrder(@Param('id') id: number): Promise<number> {
+    async deleteOrder(@Param('id', ParseIntPipe) id: number): Promise<number> {
         const req = new ManagersDeleteOrderRequest({ id });
         return await this.managersOrderService.deleteOrder(req);
     }

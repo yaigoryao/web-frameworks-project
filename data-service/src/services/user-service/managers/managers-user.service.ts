@@ -100,7 +100,7 @@ export class ManagersUserService {
                 throw new ForbiddenException("Недостаточно прав для обновления информации об этом пользователе");
             }
 
-            if (command.roleId !== null) {
+            if (command.roleId != null && command.roleId > 0) {
                 const newRole = await this.roleModel.findOne({ where: { id: command.roleId } });
                 if (!newRole || newRole.roleName.toLowerCase() !== 'user') {
                     throw new BadRequestException("Менеджер может назначать только роль обычного пользователя");

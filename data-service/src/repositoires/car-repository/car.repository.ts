@@ -26,7 +26,7 @@ export class CarRepository {
 
     async getCars(query: GetCarQuery): Promise<Car[]> {
         const whereOptions: WhereOptions = {};
-        if (query.id) {
+        if (query.id != null && Number(query.id) > 0) {
             whereOptions.id = query.id;
         }
         if (query.carNumber) {
@@ -35,12 +35,23 @@ export class CarRepository {
         if (query.vin) {
             whereOptions.vin = query.vin;
         }
-        if (query.userId) {
-            whereOptions.id = {
-                [Op.in]: (await this.userCarRepository.findAll({ where: { userId: query.userId } })).map(uc => uc.carId)
-            };
+        if (query.userId != null && Number(query.userId) > 0) {
+            const carIds = (await this.userCarRepository.findAll({ where: { userId: query.userId } })).map(
+                (uc: UserCar) => uc.carId,
+            );
+            if (carIds.length === 0) {
+                return [];
+            }
+            whereOptions.id = { [Op.in]: carIds };
         }
-        return this.carRepository.findAll({ where: whereOptions, limit: query.limit, offset: query.offset });
+        const opts: Record<string, unknown> = { where: whereOptions };
+        if (query.limit > 0) {
+            opts.limit = query.limit;
+        }
+        if (query.offset > 0) {
+            opts.offset = query.offset;
+        }
+        return this.carRepository.findAll(opts as any);
     }
 
     async updateCar(command: UpdateCarCommand): Promise<CarUpdateStatus> {

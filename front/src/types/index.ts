@@ -146,6 +146,14 @@ export const COLOR_MAP: Record<number, { name: string; hex: string }> = {
   9: { name: 'Иной', hex: '#808080' },
 };
 
+/** Индекс 0–9 для картинки `/cars/{n}.png` и подписи; вне диапазона — 9 (серый «иной»). */
+export function normalizeCarColorIndex(color: number): number {
+  if (typeof color !== 'number' || !Number.isFinite(color)) return 9;
+  const n = Math.floor(color);
+  if (n < 0 || n > 9) return 9;
+  return n;
+}
+
 export const ORDER_STATUS_MAP: Record<string, string> = {
   pending: 'Ожидание',
   in_process: 'В процессе',
