@@ -19,10 +19,9 @@ import {
   StaffUpdateUserRequest,
 } from '../types';
 
-// Auth service - port 3001
-const AUTH_API_BASE_URL = 'http://localhost:3001';
-// Data service - port 3002
-const DATA_API_BASE_URL = 'http://localhost:3002';
+/** Локальная разработка: прямой доступ к сервисам. Docker/nginx: относительные префиксы `/api/auth` и `/api/data`. */
+const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE ?? 'http://localhost:3001';
+const DATA_API_BASE_URL = import.meta.env.VITE_DATA_API_BASE ?? 'http://localhost:3002';
 
 class ApiService {
   private authClient: AxiosInstance;
