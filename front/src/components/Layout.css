@@ -69,7 +69,8 @@
   color: white;
 }
 
-.role-client {
+.role-client,
+.role-user {
   background-color: #2ecc71;
   color: white;
 }

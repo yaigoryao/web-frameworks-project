@@ -50,23 +50,37 @@ export class UserRepository {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     }): Promise<{ users: User[]; total: number }> {
-        let whereOptions: any = {};
-        
-                if (options.search) {
+        const whereOptions: WhereOptions = {};
+
+        if (options.search) {
             const searchPattern = `%${options.search}%`;
-            whereOptions[Op.or] = [
+            (whereOptions as any)[Op.or] = [
                 { login: { [Op.like]: searchPattern } },
                 { name: { [Op.like]: searchPattern } },
                 { surname: { [Op.like]: searchPattern } },
+                { patronymic: { [Op.like]: searchPattern } },
+                { phoneNumber: { [Op.like]: searchPattern } },
             ];
+        }
+
+        const roleInclude = {
+            model: Role,
+            required: !!options.role,
+            ...(options.role ? { where: { roleName: options.role } } : {}),
+        };
+
+        let sortColumn = options.sortBy || 'createdAt';
+        if (sortColumn === 'role') {
+            sortColumn = 'roleId';
         }
 
         const { count, rows } = await this.userRepository.findAndCountAll({
             where: whereOptions,
-            include: [Role],
+            include: [roleInclude],
             limit: options.limit || 10,
             offset: options.offset || 0,
-            order: options.sortBy ? [[options.sortBy, options.sortOrder || 'desc']] : [['createdAt', 'desc']],
+            order: [[sortColumn, options.sortOrder || 'desc']],
+            distinct: true,
         });
 
         return { users: rows, total: count };

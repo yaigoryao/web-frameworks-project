@@ -9,6 +9,9 @@ import { CarsPage } from './pages/CarsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UsersPage } from './pages/UsersPage';
+import { StaffProfilePage } from './pages/StaffProfilePage';
+import { StaffUserCarsPage } from './pages/StaffUserCarsPage';
+import { StaffUserOrdersPage } from './pages/StaffUserOrdersPage';
 import { Toast } from './components/Toast';
 import { useToast } from './components/Toast';
 
@@ -102,10 +105,34 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'manager']}>
+              <StaffUserOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'manager']}>
+              <StaffProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cards/:id"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'manager']}>
+              <StaffUserCarsPage />
             </ProtectedRoute>
           }
         />

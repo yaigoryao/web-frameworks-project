@@ -1,11 +1,11 @@
-export type UserRole = 'owner' | 'manager' | 'client';
+export type UserRole = 'owner' | 'manager' | 'user';
 
 export interface User {
   id: number;
   login: string;
   name: string;
   surname: string;
-  patronymic: string;
+  patronymic: string | null;
   isActive: boolean;
   phoneNumber: string;
   roleId: number;
@@ -86,6 +86,8 @@ export interface CustomerGetCarsRequest {
 }
 
 export interface CustomerGetOrdersRequest {
+  /** 0 или не передавать — все заказы (см. GetOrderQuery на бэкенде) */
+  id?: number;
   startDate?: string | null;
   endDate?: string | null;
   orderStatusId?: number | null;
@@ -93,6 +95,7 @@ export interface CustomerGetOrdersRequest {
   offset?: number;
 }
 
+/** Владелец передаёт role; менеджер создаёт только клиентов — поле не уходит в API */
 export interface CreateUserRequest {
   name: string;
   surname: string;
@@ -100,7 +103,19 @@ export interface CreateUserRequest {
   login: string;
   password: string;
   phoneNumber?: string;
-  role: 'manager' | 'client';
+  role?: 'manager' | 'user';
+}
+
+/** PUT /manager/user, /owner/user */
+export interface StaffUpdateUserRequest {
+  login: string;
+  password?: string | null;
+  name?: string | null;
+  surname?: string | null;
+  patronymic?: string | null;
+  isActive?: boolean | null;
+  phoneNumber?: string | null;
+  roleId?: number | null;
 }
 
 export interface CreateUserResponse {
@@ -143,11 +158,6 @@ export const ORDER_STATUS_MAP: Record<string, string> = {
 export const ROLE_NAMES: Record<string, string> = {
   owner: 'Владелец',
   manager: 'Менеджер',
-  client: 'Клиент',
+  user: 'Клиент',
 };
 
-export const ALLOWED_ROLES: Record<string, ('manager' | 'client')[]> = {
-  owner: ['manager', 'client'],
-  manager: ['client'],
-  client: [],
-};

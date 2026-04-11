@@ -37,7 +37,7 @@ export class ManagerUsersController {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     }): Promise<{ users: UserDto[]; total: number }> {
-        const { users, total } = await this.userRepository.getUsers(query);
+        const { users, total } = await this.userRepository.getUsers({ ...query, role: 'user' });
         return {
             users: this.mapper.toDtos<User, UserDto>(users).filter((user): user is UserDto => user !== null),
             total

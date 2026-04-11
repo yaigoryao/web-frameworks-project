@@ -3,6 +3,9 @@ import {
   User,
   Car,
   Order,
+  OrderStatus,
+  Role,
+  UserCar,
   LoginRequest,
   RegisterRequest,
   LoginResponse,
@@ -13,6 +16,7 @@ import {
   CreateUserResponse,
   UserListResponse,
   ApiError,
+  StaffUpdateUserRequest,
 } from '../types';
 
 // Auth service - port 3001
@@ -24,6 +28,8 @@ class ApiService {
   private authClient: AxiosInstance;
   private dataClient: AxiosInstance;
   private accessToken: string | null = null;
+  /** Роль из GET /customer/user (в JWT роли нет) */
+  private staffRoleName: string | null = null;
   private isRefreshing = false;
   private refreshSubscribers: ((token: string) => void)[] = [];
 
@@ -87,37 +93,6 @@ class ApiService {
     this.loadToken();
   }
 
-  private subscribeTokenRefresh(cb: (token: string) => void): void {
-    this.refreshSubscribers.push(cb);
-  }
-
-  private async withRetry<T>(
-    fn: () => Promise<T>,
-    retries = 3,
-    delay = 1000
-  ): Promise<T> {
-    let lastError: Error | null = null;
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (error) {
-        lastError = error as Error;
-        if (axios.isAxiosError(error)) {
-          const status = error.response?.status;
-          if (status === 401 || status === 403 || status === 404 || status === 422) {
-            throw error;
-          }
-          if (error.code === 'ECONNABORTED' || !error.response) {
-            await new Promise((res) => setTimeout(res, delay * (i + 1)));
-            continue;
-          }
-        }
-        throw error;
-      }
-    }
-    throw lastError || new Error('Request failed');
-  }
-
   private loadToken(): void {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -132,8 +107,14 @@ class ApiService {
 
   clearToken(): void {
     this.accessToken = null;
+    this.staffRoleName = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+  }
+
+  /** Вызывать после загрузки профиля, чтобы owner/manager попадали на верные эндпоинты */
+  setStaffUserRole(roleName: string | null): void {
+    this.staffRoleName = roleName ? roleName.toLowerCase() : null;
   }
 
   isAuthenticated(): boolean {
@@ -182,8 +163,85 @@ class ApiService {
   }
 
   async getOrders(params?: CustomerGetOrdersRequest): Promise<Order[]> {
-    const response = await this.dataClient.get<Order[]>('/customer/order', { params });
-    return response.data;
+    const merged = { id: 0, limit: 100, offset: 0, ...params };
+    const response = await this.dataClient.get<(Order | null)[]>('/customer/order', { params: merged });
+    return (response.data || []).filter((o): o is Order => o != null);
+  }
+
+  /** GET /manager/order или /owner/order с фильтром userId */
+  async getStaffOrders(params: {
+    userId: number;
+    id?: number;
+    orderStatusId?: number | null;
+    limit?: number;
+    offset?: number;
+  }): Promise<Order[]> {
+    const base = this.getUserRole() === 'owner' ? '/owner/order' : '/manager/order';
+    const merged = {
+      id: params.id ?? 0,
+      userId: params.userId,
+      limit: params.limit ?? 100,
+      offset: params.offset ?? 0,
+      ...(params.orderStatusId != null ? { orderStatusId: params.orderStatusId } : {}),
+    };
+    const response = await this.dataClient.get<(Order | null)[]>(base, { params: merged });
+    return (response.data || []).filter((o): o is Order => o != null);
+  }
+
+  /** PUT /manager/order — тело UpdateOrderCommand */
+  async updateManagerOrder(body: {
+    id: number;
+    startDate?: string | Date | null;
+    endDate?: string | Date | null;
+    plannedEndDate?: string | Date | null;
+    orderStatusId?: number | null;
+    totalPrice?: number | null;
+    description?: string | null;
+  }): Promise<void> {
+    const response = await this.dataClient.put<number>('/manager/order', body);
+    if (response.data !== 0) {
+      throw new Error(response.data === 1 ? 'Заказ не найден' : 'Не удалось обновить заказ');
+    }
+  }
+
+  /** PUT /owner/order */
+  async updateOwnerOrder(body: {
+    id: number;
+    startDate?: string | Date | null;
+    endDate?: string | Date | null;
+    plannedEndDate?: string | Date | null;
+    orderStatusId?: number | null;
+    totalPrice?: number | null;
+    description?: string | null;
+  }): Promise<void> {
+    const response = await this.dataClient.put<number>('/owner/order', body);
+    if (response.data !== 0) {
+      throw new Error(response.data === 1 ? 'Заказ не найден' : 'Не удалось обновить заказ');
+    }
+  }
+
+  async updateStaffOrder(body: {
+    id: number;
+    startDate?: string | Date | null;
+    endDate?: string | Date | null;
+    plannedEndDate?: string | Date | null;
+    orderStatusId?: number | null;
+    totalPrice?: number | null;
+    description?: string | null;
+  }): Promise<void> {
+    if (this.getUserRole() === 'owner') {
+      await this.updateOwnerOrder(body);
+    } else {
+      await this.updateManagerOrder(body);
+    }
+  }
+
+  async deleteStaffOrder(orderId: number): Promise<void> {
+    const base = this.getUserRole() === 'owner' ? '/owner/order' : '/manager/order';
+    const response = await this.dataClient.delete<number>(`${base}/${orderId}`);
+    if (response.data !== 0) {
+      throw new Error(response.data === 1 ? 'Заказ не найден' : 'Не удалось удалить заказ');
+    }
   }
 
   parseApiError(error: unknown): ApiError {
@@ -216,10 +274,20 @@ class ApiService {
   }
 
   async createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
-    // Use /manager/users for managers, /owner/users for owners
     const userRole = this.getUserRole();
     const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
-    const response = await this.dataClient.post<CreateUserResponse>(endpoint, data);
+    const body =
+      userRole === 'owner'
+        ? data
+        : {
+            name: data.name,
+            surname: data.surname,
+            patronymic: data.patronymic,
+            login: data.login,
+            password: data.password,
+            phoneNumber: data.phoneNumber,
+          };
+    const response = await this.dataClient.post<CreateUserResponse>(endpoint, body);
     return response.data;
   }
 
@@ -233,28 +301,142 @@ class ApiService {
     return response.data;
   }
 
-  async deleteUser(userId: number): Promise<void> {
+  /** DELETE /manager/user/:login или /owner/user/:login — см. contract / data-service */
+  async deleteUserByLogin(login: string): Promise<void> {
     const userRole = this.getUserRole();
-    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
-    await this.dataClient.delete(`${endpoint}/${userId}`);
+    const base = userRole === 'owner' ? '/owner/user' : '/manager/user';
+    const response = await this.dataClient.delete<number>(`${base}/${encodeURIComponent(login)}`);
+    const code = response.data;
+    if (code !== 0) {
+      throw new Error(code === 1 ? 'Пользователь не найден' : 'Не удалось удалить пользователя');
+    }
   }
 
-  async updateUserStatus(userId: number, isActive: boolean): Promise<User> {
+  /** PUT /manager/user или /owner/user — статус и прочие поля */
+  async updateStaffUser(body: StaffUpdateUserRequest): Promise<void> {
     const userRole = this.getUserRole();
-    const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
-    const response = await this.dataClient.patch<User>(`${endpoint}/${userId}/status`, { isActive });
+    const endpoint = userRole === 'owner' ? '/owner/user' : '/manager/user';
+    const response = await this.dataClient.put<number>(endpoint, body);
+    const code = response.data;
+    if (code !== 0) {
+      throw new Error(code === 1 ? 'Пользователь не найден' : 'Не удалось обновить пользователя');
+    }
+  }
+
+  /** GET /manager/user или /owner/user с query id */
+  async getStaffUserById(id: number): Promise<User> {
+    const endpoint = this.getUserRole() === 'owner' ? '/owner/user' : '/manager/user';
+    const response = await this.dataClient.get<User>(endpoint, { params: { id } });
     return response.data;
   }
 
-  private getUserRole(): string {
-    const token = this.accessToken;
-    if (!token) return 'client';
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role?.toLowerCase() || 'client';
-    } catch {
-      return 'client';
+  /** GET /manager/role (доступен и владельцу по RolesGuard) */
+  async getStaffRoles(limit = 50, offset = 0): Promise<Role[]> {
+    const response = await this.dataClient.get<{ roles: Role[]; total: number }>('/manager/role', {
+      params: { limit, offset },
+    });
+    return response.data.roles;
+  }
+
+  /** GET /manager/car или /owner/car */
+  async getStaffCars(params: {
+    userId?: number;
+    vin?: string;
+    id?: number;
+    carNumber?: string;
+    limit: number;
+    offset: number;
+  }): Promise<Car[]> {
+    const base = this.getUserRole() === 'owner' ? '/owner/car' : '/manager/car';
+    const response = await this.dataClient.get<(Car | null)[]>(base, { params });
+    return (response.data || []).filter((c): c is Car => c != null);
+  }
+
+  /** POST /manager/car — 0 = success */
+  async createStaffCar(body: {
+    carNumber: string;
+    modelName: string;
+    vin: string;
+    color: number;
+  }): Promise<void> {
+    const response = await this.dataClient.post<number>('/manager/car', body);
+    if (response.data !== 0) {
+      throw new Error('Не удалось добавить автомобиль');
     }
+  }
+
+  /** PUT /manager/car — 0 = success */
+  async updateStaffCar(body: {
+    id: number;
+    carNumber: string;
+    modelName: string;
+    vin: string;
+    color: number;
+  }): Promise<void> {
+    const response = await this.dataClient.put<number>('/manager/car', body);
+    if (response.data !== 0) {
+      throw new Error(response.data === 1 ? 'Автомобиль не найден' : 'Не удалось обновить автомобиль');
+    }
+  }
+
+  /** GET /manager/usercar */
+  async getStaffUserCarLinks(params: {
+    userId?: number;
+    carId?: number;
+    ownsNow?: boolean;
+    limit: number;
+    offset: number;
+  }): Promise<UserCar[]> {
+    const response = await this.dataClient.get<UserCar[]>('/manager/usercar', { params });
+    return response.data || [];
+  }
+
+  /** POST /manager/usercar — 0 = success */
+  async addStaffUserCar(body: { userId: number; carId: number; ownsNow: boolean }): Promise<void> {
+    const response = await this.dataClient.post<number>('/manager/usercar', body);
+    if (response.data !== 0) {
+      throw new Error('Не удалось привязать автомобиль');
+    }
+  }
+
+  /** DELETE /manager/usercar?userId=&carId= */
+  async deleteStaffUserCar(userId: number, carId: number): Promise<void> {
+    const response = await this.dataClient.delete<number>('/manager/usercar', {
+      params: { userId, carId },
+    });
+    if (response.data !== 0) {
+      throw new Error('Не удалось снять привязку');
+    }
+  }
+
+  /** GET /manager/orderstatus */
+  async getStaffOrderStatuses(limit = 50, offset = 0): Promise<OrderStatus[]> {
+    const response = await this.dataClient.get<OrderStatus[]>('/manager/orderstatus', { params: { limit, offset } });
+    return response.data || [];
+  }
+
+  /** POST /manager/order — 0 = success */
+  async createStaffOrder(body: {
+    userId: number;
+    carId: number;
+    totalPrice: number;
+    description: string | null;
+    startDate: string;
+    plannedEndDate: string;
+    endDate: string | null;
+    orderStatusId: number;
+  }): Promise<void> {
+    const response = await this.dataClient.post<number>('/manager/order', body);
+    if (response.data !== 0) {
+      throw new Error('Не удалось создать заказ');
+    }
+  }
+
+  private getUserRole(): string {
+    if (this.staffRoleName === 'owner' || this.staffRoleName === 'manager') {
+      return this.staffRoleName;
+    }
+    return 'user';
   }
 
   isOwner(): boolean {

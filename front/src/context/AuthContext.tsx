@@ -23,8 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await api.getUserInfo();
       setUser(userData);
+      api.setStaffUserRole(userData.role?.roleName ?? null);
     } catch {
       setUser(null);
+      api.setStaffUserRole(null);
     }
   };
 
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     api.clearToken();
     setUser(null);
+    api.setStaffUserRole(null);
   };
 
   const updateUser = async (data: Partial<User>) => {
@@ -62,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         patronymic: data.patronymic ?? null,
         phoneNumber: data.phoneNumber ?? null,
       };
-      if (data.password) {
-        updatePayload.password = data.password;
+      if ('password' in data && data.password) {
+        updatePayload.password = data.password as string;
       }
       await api.updateUserInfo(updatePayload);
       await refreshUser();

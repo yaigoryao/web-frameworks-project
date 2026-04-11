@@ -69,12 +69,12 @@ export class OwnerOrderService {
 
             const command = new UpdateOrderCommand({
                 id: req.id,
-                orderStatusId: req.orderStatusId || null,
-                totalPrice: req.totalPrice || null,
-                description: req.description || null,
-                plannedEndDate: req.plannedEndDate || null,
-                startDate: null,
-                endDate: req.orderStatusId === 4 ? new Date() : null
+                orderStatusId: req.orderStatusId ?? null,
+                totalPrice: req.totalPrice ?? null,
+                description: req.description ?? null,
+                plannedEndDate: req.plannedEndDate ?? null,
+                startDate: req.startDate ?? null,
+                endDate: req.endDate ?? null,
             });
 
             const result = await this.orderRepository.updateOrder(command);
