@@ -36,7 +36,6 @@ export function OrdersPage() {
   const [detail, setDetail] = useState<Order | null>(null);
   const { toasts, removeToast, error: showError } = useToast();
 
-  // Use error from query
   if (error) {
     showError('Ошибка при загрузке заказов');
   }

@@ -37,7 +37,6 @@ export function DashboardPage() {
   const user = useSelector((state: RootState) => state.auth.user);
   const { toasts, removeToast } = useToast();
   
-  // These queries will use cached data if already loaded elsewhere
   const { data: cars = [], isLoading: carsLoading } = useGetCustomerCarsQuery({ limit: 100, offset: 0 });
   const { data: orders = [], isLoading: ordersLoading } = useGetCustomerOrdersQuery({});
 

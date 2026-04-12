@@ -12,7 +12,6 @@ export function ProfilePage() {
   const token = useSelector((state: RootState) => state.auth.accessToken);
   const dispatch = useDispatch();
   
-  // Load current user data
   useGetCurrentUserQuery(undefined, { skip: !token });
   
   const [updateUserMutation] = useUpdateCurrentUserMutation();

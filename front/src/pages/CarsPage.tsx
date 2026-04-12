@@ -7,7 +7,6 @@ export function CarsPage() {
   const { data: cars = [], isLoading, error } = useGetCustomerCarsQuery({ limit: 100, offset: 0 });
   const { toasts, removeToast, error: showError } = useToast();
 
-  // Use error from query
   if (error) {
     showError('Ошибка при загрузке машин');
   }

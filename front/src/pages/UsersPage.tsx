@@ -82,24 +82,19 @@ export function UsersPage() {
     return () => window.clearTimeout(t);
   }, [searchInput]);
 
-  // Filter and sort users locally
   const filteredUsers = useMemo(() => {
-    // Ensure users is always an array
     if (!Array.isArray(users)) {
       return [];
     }
     
     let result = users;
 
-    // Filter by role if owner
     if (isOwner && roleFilter) {
       result = result.filter(u => u.role?.roleName?.toLowerCase() === roleFilter);
     } else if (isManager) {
-      // Managers can only see regular users
       result = result.filter(u => u.role?.roleName?.toLowerCase() === 'user');
     }
 
-    // Filter by search term
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       result = result.filter(u =>
@@ -110,7 +105,6 @@ export function UsersPage() {
       );
     }
 
-    // Sort
     result = [...result].sort((a, b) => {
       let aVal: any = sortField === 'role' ? a.role?.roleName : (a as any)[sortField];
       let bVal: any = sortField === 'role' ? b.role?.roleName : (b as any)[sortField];
@@ -126,7 +120,6 @@ export function UsersPage() {
     }, [debouncedSearch, roleFilter, sortField, sortOrder, isOwner, isManager, users]
   );
 
-  // Paginated users
   const paginatedUsers = useMemo(() => {
     if (!Array.isArray(filteredUsers)) {
       return [];

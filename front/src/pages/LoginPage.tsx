@@ -26,7 +26,6 @@ export function LoginPage() {
         accessToken: response.accessToken, 
         refreshToken: response.refreshToken 
       }));
-      // After setting token, redirect - user data will be loaded in ProtectedRoute
       navigate('/dashboard');
     } catch (err) {
       const { message } = api.parseApiError(err);

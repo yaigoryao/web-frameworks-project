@@ -10,7 +10,6 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                // Ignore these action types for serialization check
                 ignoredActions: ['auth/setToken'],
             },
         }).concat(apiSlice.middleware),
