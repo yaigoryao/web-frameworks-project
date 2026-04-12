@@ -18,6 +18,14 @@ function muiShared(deps) {
   };
 }
 
+/** Host entry импортирует React/MUI синхронно — иначе MF: «Shared module is not available for eager consumption». */
+function muiSharedForHost(deps) {
+  const base = muiShared(deps);
+  return Object.fromEntries(
+    Object.entries(base).map(([key, cfg]) => [key, { ...cfg, eager: true }])
+  );
+}
+
 /**
  * @typedef {Object} HostOptions
  * @property {string} dirname - __dirname приложения
@@ -81,7 +89,7 @@ function createHostConfig(options) {
       new ModuleFederationPlugin({
         name: 'host',
         remotes,
-        shared: muiShared(deps),
+        shared: muiSharedForHost(deps),
       }),
       new HtmlWebpackPlugin({
         template: path.join(dirname, 'public/index.html'),
@@ -179,4 +187,4 @@ function createRemoteConfig(options) {
   };
 }
 
-module.exports = { createHostConfig, createRemoteConfig, muiShared };
+module.exports = { createHostConfig, createRemoteConfig, muiShared, muiSharedForHost };
