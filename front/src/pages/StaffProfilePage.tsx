@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import {
   Alert,
   Box,
@@ -18,20 +19,20 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { api } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { User, Role, ROLE_NAMES } from '../types';
+import { useAuth } from '../hooks/useAuth';
+import { useRootStore } from '../stores/StoreContext';
+import { ROLE_NAMES } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
-export function StaffProfilePage() {
+export const StaffProfilePage = observer(function StaffProfilePage() {
   const { id } = useParams();
   const { user: currentUser } = useAuth();
+  const { staffUserDataStore } = useRootStore();
   const { toasts, removeToast, success, error: showError } = useToast();
 
   const userId = Number(id);
-  const [target, setTarget] = useState<User | null>(null);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const target = staffUserDataStore.getProfileUser(userId);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -40,39 +41,46 @@ export function StaffProfilePage() {
   const [isActive, setIsActive] = useState(true);
   const [roleId, setRoleId] = useState<number>(0);
   const [password, setPassword] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const viewerRole = currentUser?.role?.roleName?.toLowerCase() || '';
   const isOwner = viewerRole === 'owner';
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const u = await api.getStaffUserById(userId);
-      setTarget(u);
-      setName(u.name || '');
-      setSurname(u.surname || '');
-      setPatronymic(u.patronymic || '');
-      setPhoneNumber(u.phoneNumber || '');
-      setIsActive(u.isActive);
-      setRoleId(u.roleId);
-      if (viewerRole === 'owner') {
-        const r = await api.getStaffRoles(50, 0);
-        setRoles(r);
-      } else {
-        setRoles([]);
-      }
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setTarget(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, viewerRole, showError]);
+  const roles = staffUserDataStore.staffRoles;
 
   useEffect(() => {
     if (!Number.isFinite(userId) || userId < 1) return;
-    load();
-  }, [userId, load]);
+    setPageLoading(true);
+    void (async () => {
+      try {
+        await staffUserDataStore.ensureProfileUser(userId);
+        if (viewerRole === 'owner') {
+          await staffUserDataStore.ensureStaffRoles();
+        }
+      } catch (err) {
+        showError(api.parseApiError(err).message);
+      } finally {
+        setPageLoading(false);
+      }
+    })();
+  }, [userId, viewerRole, staffUserDataStore, showError]);
+
+  useEffect(() => {
+    if (!target) {
+      setName('');
+      setSurname('');
+      setPatronymic('');
+      setPhoneNumber('');
+      setIsActive(true);
+      setRoleId(0);
+      return;
+    }
+    setName(target.name || '');
+    setSurname(target.surname || '');
+    setPatronymic(target.patronymic || '');
+    setPhoneNumber(target.phoneNumber || '');
+    setIsActive(target.isActive);
+    setRoleId(target.roleId);
+  }, [target]);
 
   const handleRoleChange = (e: SelectChangeEvent<number>) => {
     setRoleId(Number(e.target.value));
@@ -83,7 +91,7 @@ export function StaffProfilePage() {
     if (!target?.login) return;
     setSaving(true);
     try {
-      await api.updateStaffUser({
+      await staffUserDataStore.updateStaffProfileUser(userId, {
         login: target.login,
         name: name.trim() || null,
         surname: surname.trim() || null,
@@ -95,7 +103,6 @@ export function StaffProfilePage() {
       });
       success('Профиль сохранён');
       setPassword('');
-      await load();
     } catch (err) {
       showError(api.parseApiError(err).message);
     } finally {
@@ -107,7 +114,7 @@ export function StaffProfilePage() {
     return <Navigate to="/users" replace />;
   }
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
@@ -232,4 +239,4 @@ export function StaffProfilePage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

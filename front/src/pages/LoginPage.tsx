@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
 import './AuthPage.css';
 
@@ -18,6 +18,21 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7647/ingest/5dbce222-9957-4ad6-b6f1-d80f014d3c87', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0fe60' },
+        body: JSON.stringify({
+          sessionId: 'e0fe60',
+          runId: 'pre-fix',
+          hypothesisId: 'H1',
+          location: 'LoginPage.tsx:handleSubmit',
+          message: 'about to call destructured authLogin',
+          data: { authLoginType: typeof authLogin },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       await authLogin({ login, password });
       navigate('/dashboard');
     } catch (err) {

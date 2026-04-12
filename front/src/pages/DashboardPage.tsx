@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
@@ -9,11 +9,11 @@ import {
   Divider,
   Typography,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import { observer } from 'mobx-react-lite';
+import { useAuth } from '../hooks/useAuth';
+import { useRootStore } from '../stores/StoreContext';
 import { Car, Order, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
-
 
 const ACTIVE_STATUS_NAMES = new Set(['pending', 'in_process', 'waiting_car']);
 
@@ -32,38 +32,29 @@ function carLine(c: Car): string {
   return parts.join(' · ') || `Автомобиль #${c.id}`;
 }
 
-export function DashboardPage() {
-  const { user } = useAuth();
+export const DashboardPage = observer(function DashboardPage() {
+  const auth = useAuth();
+  const { user } = auth;
+  const { customerDataStore } = useRootStore();
   const { toasts, removeToast, error: showError } = useToast();
-  const [cars, setCars] = useState<Car[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [carsData, ordersData] = await Promise.all([
-        api.getCars({ limit: 100, offset: 0 }),
-        api.getOrders({ id: 0, limit: 100, offset: 0 }),
-      ]);
-      setCars(carsData);
-      setOrders(ordersData);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setCars([]);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    void (async () => {
+      await Promise.all([
+        customerDataStore.ensureCars(),
+        customerDataStore.ensureOrders(),
+      ]);
+      if (customerDataStore.carsError) showError(customerDataStore.carsError);
+      if (customerDataStore.ordersError) showError(customerDataStore.ordersError);
+    })();
+  }, [customerDataStore, showError]);
+
+  const { cars, orders, carsLoading, ordersLoading } = customerDataStore;
+  const loading = carsLoading || ordersLoading;
 
   const activeOrders = useMemo(() => orders.filter(isActiveOrder), [orders]);
 
-  if (loading) {
+  if (loading && cars.length === 0 && orders.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
@@ -77,6 +68,7 @@ export function DashboardPage() {
         Сводка
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
+        Профиль, активные заказы и ваши автомобили (списком, без фото — по контракту).
       </Typography>
 
       <Box
@@ -118,7 +110,7 @@ export function DashboardPage() {
               </Button>
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-             
+              Статусы: ожидание, в процессе, ожидание машины
             </Typography>
             <Divider sx={{ mb: 1 }} />
             {activeOrders.length === 0 ? (
@@ -140,11 +132,11 @@ export function DashboardPage() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6">Мои автомобили</Typography>
               <Button component={Link} to="/cars" size="small">
-                Полная информация
+                Карточки с фото
               </Button>
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              
+              На дашборде — только текстовый список
             </Typography>
             <Divider sx={{ mb: 1 }} />
             {cars.length === 0 ? (
@@ -165,4 +157,4 @@ export function DashboardPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

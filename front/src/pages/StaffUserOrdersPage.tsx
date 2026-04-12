@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import {
   Box,
   Button,
@@ -27,6 +28,7 @@ import { ArrowBack, DeleteOutlined as DeleteOutlineIcon, Edit as EditIcon } from
 import { api } from '../services/api';
 import { Order, OrderStatus, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
+import { useRootStore } from '../stores/StoreContext';
 
 const ACTIVE_STATUS_NAMES = new Set(['pending', 'in_process', 'waiting_car']);
 
@@ -48,14 +50,16 @@ function toLocalInputValue(iso: string | null | undefined): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function StaffUserOrdersPage() {
+export const StaffUserOrdersPage = observer(function StaffUserOrdersPage() {
   const { id } = useParams();
   const userId = Number(id);
+  const { staffUserDataStore, staffReferenceStore } = useRootStore();
   const { toasts, removeToast, success, error: showError } = useToast();
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [statuses, setStatuses] = useState<OrderStatus[]>([]);
-  const [loading, setLoading] = useState(true);
+  const orders = staffUserDataStore.getOrders(userId);
+  const statuses: OrderStatus[] = staffReferenceStore.orderStatuses;
+
+  const [pageLoading, setPageLoading] = useState(true);
   const [activeOnly, setActiveOnly] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -71,27 +75,31 @@ export function StaffUserOrdersPage() {
     [statuses]
   );
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [list, st] = await Promise.all([
-        api.getStaffOrders({ userId, id: 0, limit: 200, offset: 0 }),
-        api.getStaffOrderStatuses(50, 0),
-      ]);
-      setOrders(list);
-      setStatuses(st);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, showError]);
+  const refreshOrders = useCallback(async () => {
+    await staffUserDataStore.ensureStaffOrders(userId, true);
+  }, [staffUserDataStore, userId]);
 
   useEffect(() => {
     if (!Number.isFinite(userId) || userId < 1) return;
-    load();
-  }, [userId, load]);
+    setPageLoading(true);
+    void (async () => {
+      try {
+        await Promise.all([
+          staffUserDataStore.ensureStaffOrders(userId),
+          staffReferenceStore.ensureOrderStatuses(),
+        ]);
+      } catch (err) {
+        showError(api.parseApiError(err).message);
+      } finally {
+        setPageLoading(false);
+      }
+    })();
+  }, [userId, staffUserDataStore, staffReferenceStore, showError]);
+
+  const loading =
+    pageLoading ||
+    staffUserDataStore.ordersLoadingUserId === userId ||
+    (staffReferenceStore.orderStatusesLoading && statuses.length === 0);
 
   const visible = useMemo(
     () => (activeOnly ? orders.filter(isActiveOrder) : orders),
@@ -141,7 +149,7 @@ export function StaffUserOrdersPage() {
       success('Заказ обновлён');
       setEditOpen(false);
       setEditOrder(null);
-      await load();
+      await refreshOrders();
     } catch (err) {
       showError(api.parseApiError(err).message);
     }
@@ -158,7 +166,7 @@ export function StaffUserOrdersPage() {
     try {
       await api.deleteStaffOrder(o.id);
       success('Заказ помечен как удалённый');
-      await load();
+      await refreshOrders();
     } catch (err) {
       showError(api.parseApiError(err).message);
     }
@@ -292,4 +300,4 @@ export function StaffUserOrdersPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

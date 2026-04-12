@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { observer } from 'mobx-react-lite';
+import { StoreProvider } from './stores/StoreContext';
+import { useAuth } from './hooks/useAuth';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -15,55 +17,58 @@ import { StaffUserOrdersPage } from './pages/StaffUserOrdersPage';
 import { Toast } from './components/Toast';
 import { useToast } from './components/Toast';
 
-function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+const ProtectedRoute = observer(function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}) {
+  const auth = useAuth();
 
-  if (isLoading) {
+  if (auth.isLoading) {
     return <div className="loading">Загрузка...</div>;
   }
 
-  if (!isAuthenticated) {
+  if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user?.role?.roleName) {
-    const userRole = user.role.roleName.toLowerCase();
+  if (allowedRoles && auth.user?.role?.roleName) {
+    const userRole = auth.user.role.roleName.toLowerCase();
     if (!allowedRoles.includes(userRole)) {
       return <Navigate to="/dashboard" replace />;
     }
   }
 
   return <>{children}</>;
-}
+});
 
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+const PublicRoute = observer(function PublicRoute({ children }: { children: React.ReactNode }) {
+  const auth = useAuth();
 
-  if (isLoading) {
+  if (auth.isLoading) {
     return <div className="loading">Загрузка...</div>;
   }
 
-  if (isAuthenticated) {
+  if (auth.isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
-}
+});
 
-function AppRoutes() {
-  const { user } = useAuth();
+const AppRoutes = observer(function AppRoutes() {
+  const auth = useAuth();
   const { toasts, removeToast } = useToast();
-  const userRole = user?.role?.roleName?.toLowerCase() || '';
-  
+  const userRole = auth.user?.role?.roleName?.toLowerCase() || '';
+
   const canManageUsers = userRole === 'owner' || userRole === 'manager';
 
   return (
     <Layout allowedRoles={canManageUsers ? [userRole] : []}>
       <Routes>
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/login"
           element={
@@ -144,22 +149,19 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toast toasts={toasts} onRemove={removeToast} />
     </Layout>
   );
-}
+});
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <StoreProvider>
         <AppRoutes />
-      </AuthProvider>
+      </StoreProvider>
     </BrowserRouter>
   );
 }

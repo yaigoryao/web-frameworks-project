@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -14,7 +14,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { api } from '../services/api';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '../stores/StoreContext';
 import { Order, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
@@ -30,29 +31,21 @@ function formatDt(dateStr: string | null | undefined): string {
   return new Date(dateStr).toLocaleString('ru-RU');
 }
 
-export function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+export const OrdersPage = observer(function OrdersPage() {
+  const { customerDataStore } = useRootStore();
   const [activeOnly, setActiveOnly] = useState(false);
   const [detail, setDetail] = useState<Order | null>(null);
   const { toasts, removeToast, error: showError } = useToast();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await api.getOrders({ id: 0, limit: 100, offset: 0 });
-      setOrders(data);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
   useEffect(() => {
-    load();
-  }, [load]);
+    void (async () => {
+      await customerDataStore.ensureOrders();
+      if (customerDataStore.ordersError) showError(customerDataStore.ordersError);
+    })();
+  }, [customerDataStore, showError]);
+
+  const { orders, ordersLoading } = customerDataStore;
+  const loading = ordersLoading && orders.length === 0;
 
   const visible = useMemo(
     () => (activeOnly ? orders.filter(isActiveOrder) : orders),
@@ -72,7 +65,7 @@ export function OrdersPage() {
 
       <FormControlLabel
         control={<Switch checked={activeOnly} onChange={(_, v) => setActiveOnly(v)} />}
-        label="Только активные"
+        label="Только активные (ожидание, в процессе, ожидание машины)"
         sx={{ mb: 2, display: 'block' }}
       />
 
@@ -144,4 +137,4 @@ export function OrdersPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

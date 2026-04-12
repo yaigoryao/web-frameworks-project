@@ -17,6 +17,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { api } from '../services/api';
+import { useRootStore } from '../stores/StoreContext';
 import { CreateUserRequest } from '../types';
 
 interface AddUserModalProps {
@@ -47,6 +48,7 @@ const emptyForm = (): CreateUserRequest => ({
 });
 
 export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: AddUserModalProps) {
+  const { usersListStore } = useRootStore();
   const [formData, setFormData] = useState<CreateUserRequest>(emptyForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +113,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
     loginDebounceRef.current = setTimeout(async () => {
       setIsCheckingLogin(true);
       try {
-        const result = await api.checkEmailAvailability(trimmed);
+        const result = await usersListStore.checkLoginAvailability(trimmed);
         setErrors((prev) => ({
           ...prev,
           login: result.available ? undefined : 'Логин уже занят',
@@ -123,7 +125,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
         setIsCheckingLogin(false);
       }
     }, 500);
-  }, []);
+  }, [usersListStore]);
 
   useEffect(() => {
     return () => {
@@ -184,7 +186,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
     }
 
     try {
-      await api.createUser(payload);
+      await usersListStore.createUser(payload);
       onSuccess();
       onClose();
     } catch (error) {

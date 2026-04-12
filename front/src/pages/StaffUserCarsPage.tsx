@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import {
   Alert,
   Box,
@@ -28,8 +29,9 @@ import LinkOffIcon from '@mui/icons-material/LinkOff';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import SearchIcon from '@mui/icons-material/Search';
 import { api } from '../services/api';
-import { Car, COLOR_MAP, OrderStatus } from '../types';
+import { Car, COLOR_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
+import { useRootStore } from '../stores/StoreContext';
 
 const COLOR_KEYS = Object.keys(COLOR_MAP).map(Number).sort((a, b) => a - b);
 
@@ -37,14 +39,15 @@ function normalizeVin(v: string): string {
   return v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 }
 
-export function StaffUserCarsPage() {
+export const StaffUserCarsPage = observer(function StaffUserCarsPage() {
   const { id } = useParams();
   const userId = Number(id);
+  const { staffUserDataStore, staffReferenceStore } = useRootStore();
   const { toasts, removeToast, success, error: showError } = useToast();
 
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([]);
+  const cars = staffUserDataStore.getCars(userId);
+  const orderStatuses = staffReferenceStore.orderStatuses;
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [vinInput, setVinInput] = useState('');
   const [vinBusy, setVinBusy] = useState(false);
@@ -72,40 +75,37 @@ export function StaffUserCarsPage() {
   const [orderPlanned, setOrderPlanned] = useState('');
   const [orderStatusId, setOrderStatusId] = useState<number>(0);
 
-  const loadCars = useCallback(async () => {
-    setLoading(true);
-    try {
-      const list = await api.getStaffCars({ userId, limit: 100, offset: 0 });
-      setCars(list);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setCars([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, showError]);
+  const refreshCars = useCallback(async () => {
+    await staffUserDataStore.ensureStaffCars(userId, true);
+  }, [staffUserDataStore, userId]);
 
   useEffect(() => {
     if (!Number.isFinite(userId) || userId < 1) return;
-    loadCars();
-  }, [userId, loadCars]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+    setPageLoading(true);
+    void (async () => {
       try {
-        const s = await api.getStaffOrderStatuses(50, 0);
-        if (cancelled) return;
-        setOrderStatuses(s);
-        if (s.length) setOrderStatusId((prev) => prev || s[0].id);
-      } catch {
-        /* ignore */
+        await Promise.all([
+          staffUserDataStore.ensureStaffCars(userId),
+          staffReferenceStore.ensureOrderStatuses(),
+        ]);
+      } catch (err) {
+        showError(api.parseApiError(err).message);
+      } finally {
+        setPageLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [userId, staffUserDataStore, staffReferenceStore, showError]);
+
+  useEffect(() => {
+    if (orderStatuses.length) {
+      setOrderStatusId((prev) => prev || orderStatuses[0].id);
+    }
+  }, [orderStatuses]);
+
+  const loading =
+    pageLoading ||
+    staffUserDataStore.carsLoadingUserId === userId ||
+    (staffReferenceStore.orderStatusesLoading && orderStatuses.length === 0);
 
   const openEdit = (c: Car) => {
     setEditCar(c);
@@ -127,7 +127,7 @@ export function StaffUserCarsPage() {
       });
       success('Автомобиль обновлён');
       setEditCar(null);
-      await loadCars();
+      await refreshCars();
     } catch (err) {
       showError(api.parseApiError(err).message);
     }
@@ -138,7 +138,7 @@ export function StaffUserCarsPage() {
     try {
       await api.deleteStaffUserCar(userId, carId);
       success('Привязка снята');
-      await loadCars();
+      await refreshCars();
     } catch (err) {
       showError(api.parseApiError(err).message);
     }
@@ -178,7 +178,7 @@ export function StaffUserCarsPage() {
       await api.addStaffUserCar({ userId, carId: car.id, ownsNow: true });
       success('Автомобиль привязан');
       setVinInput('');
-      await loadCars();
+      await refreshCars();
     } catch (err) {
       showError(api.parseApiError(err).message);
     } finally {
@@ -194,7 +194,7 @@ export function StaffUserCarsPage() {
       success('Привязка перенесена');
       setTransferOpen(false);
       setVinInput('');
-      await loadCars();
+      await refreshCars();
     } catch (err) {
       showError(api.parseApiError(err).message);
     } finally {
@@ -221,7 +221,7 @@ export function StaffUserCarsPage() {
       success('Автомобиль создан и привязан');
       setCreateOpen(false);
       setVinInput('');
-      await loadCars();
+      await refreshCars();
     } catch (err) {
       showError(api.parseApiError(err).message);
     }
@@ -255,6 +255,7 @@ export function StaffUserCarsPage() {
         orderStatusId,
       });
       success('Заказ создан');
+      staffUserDataStore.invalidateOrders(userId);
       setOrderCar(null);
       setOrderPrice('');
       setOrderDesc('');
@@ -511,4 +512,4 @@ export function StaffUserCarsPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

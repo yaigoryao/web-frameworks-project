@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Box,
   Card,
@@ -8,31 +8,24 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import { api } from '../services/api';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '../stores/StoreContext';
 import { Car, COLOR_MAP, normalizeCarColorIndex } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
-export function CarsPage() {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
+export const CarsPage = observer(function CarsPage() {
+  const { customerDataStore } = useRootStore();
   const { toasts, removeToast, error: showError } = useToast();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await api.getCars({ limit: 100, offset: 0 });
-      setCars(data);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setCars([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
   useEffect(() => {
-    load();
-  }, [load]);
+    void (async () => {
+      await customerDataStore.ensureCars();
+      if (customerDataStore.carsError) showError(customerDataStore.carsError);
+    })();
+  }, [customerDataStore, showError]);
+
+  const { cars, carsLoading } = customerDataStore;
+  const loading = carsLoading && cars.length === 0;
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
@@ -40,11 +33,11 @@ export function CarsPage() {
         Мои автомобили
       </Typography>
       <Typography component="div" variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-
+        Список ваших привязанных машин. Для каждой карточки — абстрактное фото по коду цвета из базы (файлы{' '}
         <Box component="span" sx={{ fontFamily: 'monospace' }}>
-          
+          public/cars/0.png … 9.png
         </Box>
-        
+        ); значения вне диапазона 0–9 показываются как «иной» (серый, код 9).
       </Typography>
 
       {loading ? (
@@ -61,7 +54,7 @@ export function CarsPage() {
             gap: 2,
           }}
         >
-          {cars.map((car) => {
+          {cars.map((car: Car) => {
             const colorIdx = normalizeCarColorIndex(car.color);
             const colorMeta = COLOR_MAP[colorIdx];
             return (
@@ -107,4 +100,4 @@ export function CarsPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

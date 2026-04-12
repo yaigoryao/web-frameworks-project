@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -36,7 +38,8 @@ import {
   ToggleOn as ToggleOnIcon,
 } from '@mui/icons-material';
 import { api } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { useRootStore } from '../stores/StoreContext';
 import { User, ROLE_NAMES } from '../types';
 import { AddUserModal } from '../components/AddUserModal';
 import { Toast, useToast } from '../components/Toast';
@@ -51,12 +54,11 @@ const OWNER_ROLE_FILTER: { value: string; label: string }[] = [
   { value: 'user', label: ROLE_NAMES.user },
 ];
 
-export function UsersPage() {
+export const UsersPage = observer(function UsersPage() {
   const { user } = useAuth();
+  const { usersListStore } = useRootStore();
   const { toasts, removeToast, success, error: showError } = useToast();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -65,7 +67,9 @@ export function UsersPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const users = usersListStore.users;
+  const totalUsers = usersListStore.total;
+  const isLoading = usersListStore.loading;
 
   const currentUserRoleName = user?.role?.roleName?.toLowerCase() || '';
   const isOwner = currentUserRoleName === 'owner';
@@ -79,39 +83,25 @@ export function UsersPage() {
 
   const apiSortField = sortField === 'role' ? 'role' : sortField;
 
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const result = await api.getUsers({
-        role: isOwner ? (roleFilter || undefined) : undefined,
-        search: debouncedSearch || undefined,
-        limit: rowsPerPage,
-        offset: page * rowsPerPage,
-        sortBy: apiSortField,
-        sortOrder,
-      });
-      setUsers(result.users);
-      setTotalUsers(result.total);
-    } catch (err) {
-      const apiError = api.parseApiError(err);
-      showError(`Ошибка загрузки пользователей: ${apiError.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+  useEffect(() => {
+    void usersListStore.loadUsers({
+      role: isOwner ? (roleFilter || undefined) : undefined,
+      search: debouncedSearch || undefined,
+      limit: rowsPerPage,
+      offset: page * rowsPerPage,
+      sortBy: apiSortField,
+      sortOrder,
+    });
   }, [
+    usersListStore,
     page,
     rowsPerPage,
     roleFilter,
     debouncedSearch,
     apiSortField,
     sortOrder,
-    showError,
     isOwner,
   ]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
 
   useEffect(() => {
     setPage(0);
@@ -128,7 +118,7 @@ export function UsersPage() {
 
   const handleAddUserSuccess = () => {
     success('Пользователь успешно создан!');
-    fetchUsers();
+    void usersListStore.refreshList();
   };
 
   const canModifyUser = useCallback(
@@ -147,9 +137,9 @@ export function UsersPage() {
     if (!window.confirm(`Удалить пользователя «${label}» (${target.login})?`)) return;
 
     try {
-      await api.deleteUserByLogin(target.login);
+      await usersListStore.deleteUserByLogin(target.login);
       success('Пользователь удалён');
-      fetchUsers();
+      await usersListStore.refreshList();
     } catch (err) {
       const apiError = api.parseApiError(err);
       showError(apiError.status === 403 ? 'Недостаточно прав для удаления' : apiError.message);
@@ -159,7 +149,7 @@ export function UsersPage() {
   const handleToggleStatus = async (target: User) => {
     if (!canModifyUser(target)) return;
     try {
-      await api.updateStaffUser({
+      await usersListStore.updateStaffUser({
         login: target.login,
         password: null,
         name: null,
@@ -170,7 +160,7 @@ export function UsersPage() {
         isActive: !target.isActive,
       });
       success(target.isActive ? 'Пользователь деактивирован' : 'Пользователь активирован');
-      fetchUsers();
+      await usersListStore.refreshList();
     } catch (err) {
       const apiError = api.parseApiError(err);
       showError(apiError.message);
@@ -200,6 +190,11 @@ export function UsersPage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1440, mx: 'auto' }}>
+      {usersListStore.error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Ошибка загрузки пользователей: {usersListStore.error}
+        </Alert>
+      )}
       <Box
         sx={{
           display: 'flex',
@@ -434,4 +429,4 @@ export function UsersPage() {
       <Toast toasts={toasts} onRemove={removeToast} />
     </Box>
   );
-}
+});

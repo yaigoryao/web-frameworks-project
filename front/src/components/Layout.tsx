@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { observer } from 'mobx-react-lite';
+import { useAuth } from '../hooks/useAuth';
 import './Layout.css';
 
 interface LayoutProps {
@@ -8,8 +9,9 @@ interface LayoutProps {
   allowedRoles?: string[];
 }
 
-export function Layout({ children, allowedRoles = [] }: LayoutProps) {
-  const { user, logout, isAuthenticated } = useAuth();
+export const Layout = observer(function Layout({ children, allowedRoles = [] }: LayoutProps) {
+  const auth = useAuth();
+  const { user, logout, isAuthenticated } = auth;
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -67,4 +69,5 @@ export function Layout({ children, allowedRoles = [] }: LayoutProps) {
       <main className="main-content">{children}</main>
     </div>
   );
-}
+});
+
