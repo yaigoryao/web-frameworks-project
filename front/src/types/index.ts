@@ -86,7 +86,6 @@ export interface CustomerGetCarsRequest {
 }
 
 export interface CustomerGetOrdersRequest {
-  /** 0 или не передавать — все заказы (см. GetOrderQuery на бэкенде) */
   id?: number;
   startDate?: string | null;
   endDate?: string | null;
@@ -95,7 +94,6 @@ export interface CustomerGetOrdersRequest {
   offset?: number;
 }
 
-/** Владелец передаёт role; менеджер создаёт только клиентов — поле не уходит в API */
 export interface CreateUserRequest {
   name: string;
   surname: string;
@@ -106,7 +104,6 @@ export interface CreateUserRequest {
   role?: 'manager' | 'user';
 }
 
-/** PUT /manager/user, /owner/user */
 export interface StaffUpdateUserRequest {
   login: string;
   password?: string | null;
@@ -146,7 +143,6 @@ export const COLOR_MAP: Record<number, { name: string; hex: string }> = {
   9: { name: 'Иной', hex: '#808080' },
 };
 
-/** Индекс 0–9 для картинки `/cars/{n}.png` и подписи; вне диапазона — 9 (серый «иной»). */
 export function normalizeCarColorIndex(color: number): number {
   if (typeof color !== 'number' || !Number.isFinite(color)) return 9;
   const n = Math.floor(color);

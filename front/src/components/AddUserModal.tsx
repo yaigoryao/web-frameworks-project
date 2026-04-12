@@ -123,7 +123,6 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
     }, 500);
   }, []);
 
-  // Update when login check result arrives
   useEffect(() => {
     if (loginCheckResult) {
       setErrors((prev) => ({

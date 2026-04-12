@@ -111,7 +111,6 @@ class ApiService {
     localStorage.removeItem('refreshToken');
   }
 
-  /** Вызывать после загрузки профиля, чтобы owner/manager попадали на верные эндпоинты */
   setStaffUserRole(roleName: string | null): void {
     this.staffRoleName = roleName ? roleName.toLowerCase() : null;
   }
@@ -120,7 +119,6 @@ class ApiService {
     return !!this.accessToken;
   }
 
-  // Auth endpoints (user-service on port 3001)
   async login(data: LoginRequest): Promise<LoginResponse> {
     const response = await this.authClient.post<LoginResponse>('/login', data);
     this.setToken(response.data.accessToken);
@@ -144,7 +142,6 @@ class ApiService {
     return response.data;
   }
 
-  // Customer endpoints (data-service on port 3002)
   async getUserInfo(): Promise<User> {
     const response = await this.dataClient.get<User>('/customer/user');
     return response.data;
@@ -152,7 +149,6 @@ class ApiService {
 
   async updateUserInfo(data: CustomerUpdateUserRequest): Promise<boolean> {
     const response = await this.dataClient.put<number>('/customer/user', data);
-    // UserUpdateStatus: 0 = Success, 1 = NotFound, 2 = Error
     return response.data === 0;
   }
 
@@ -167,7 +163,6 @@ class ApiService {
     return (response.data || []).filter((o): o is Order => o != null);
   }
 
-  /** GET /manager/order или /owner/order с фильтром userId */
   async getStaffOrders(params: {
     userId: number;
     id?: number;
@@ -187,7 +182,6 @@ class ApiService {
     return (response.data || []).filter((o): o is Order => o != null);
   }
 
-  /** PUT /manager/order — тело UpdateOrderCommand */
   async updateManagerOrder(body: {
     id: number;
     startDate?: string | Date | null;
@@ -203,7 +197,6 @@ class ApiService {
     }
   }
 
-  /** PUT /owner/order */
   async updateOwnerOrder(body: {
     id: number;
     startDate?: string | Date | null;
@@ -267,7 +260,6 @@ class ApiService {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }): Promise<UserListResponse> {
-    // Use /manager/users for managers, /owner/users for owners
     const userRole = this.getUserRole();
     const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
     const response = await this.dataClient.get<UserListResponse>(endpoint, { params });
@@ -281,19 +273,18 @@ class ApiService {
       userRole === 'owner'
         ? data
         : {
-            name: data.name,
-            surname: data.surname,
-            patronymic: data.patronymic,
-            login: data.login,
-            password: data.password,
-            phoneNumber: data.phoneNumber,
-          };
+          name: data.name,
+          surname: data.surname,
+          patronymic: data.patronymic,
+          login: data.login,
+          password: data.password,
+          phoneNumber: data.phoneNumber,
+        };
     const response = await this.dataClient.post<CreateUserResponse>(endpoint, body);
     return response.data;
   }
 
   async checkEmailAvailability(login: string): Promise<{ available: boolean }> {
-    // Use /manager/users for managers, /owner/users for owners
     const userRole = this.getUserRole();
     const endpoint = userRole === 'owner' ? '/owner/users' : '/manager/users';
     const response = await this.dataClient.get<{ available: boolean }>(`${endpoint}/check-login`, {
@@ -302,7 +293,6 @@ class ApiService {
     return response.data;
   }
 
-  /** DELETE /manager/user/:login или /owner/user/:login — см. contract / data-service */
   async deleteUserByLogin(login: string): Promise<void> {
     const userRole = this.getUserRole();
     const base = userRole === 'owner' ? '/owner/user' : '/manager/user';
@@ -313,7 +303,6 @@ class ApiService {
     }
   }
 
-  /** PUT /manager/user или /owner/user — статус и прочие поля */
   async updateStaffUser(body: StaffUpdateUserRequest): Promise<void> {
     const userRole = this.getUserRole();
     const endpoint = userRole === 'owner' ? '/owner/user' : '/manager/user';
@@ -324,14 +313,12 @@ class ApiService {
     }
   }
 
-  /** GET /manager/user или /owner/user с query id */
   async getStaffUserById(id: number): Promise<User> {
     const endpoint = this.getUserRole() === 'owner' ? '/owner/user' : '/manager/user';
     const response = await this.dataClient.get<User>(endpoint, { params: { id } });
     return response.data;
   }
 
-  /** GET /manager/role (доступен и владельцу по RolesGuard) */
   async getStaffRoles(limit = 50, offset = 0): Promise<Role[]> {
     const response = await this.dataClient.get<{ roles: Role[]; total: number }>('/manager/role', {
       params: { limit, offset },
@@ -339,7 +326,6 @@ class ApiService {
     return response.data.roles;
   }
 
-  /** GET /manager/car или /owner/car */
   async getStaffCars(params: {
     userId?: number;
     vin?: string;
@@ -353,7 +339,6 @@ class ApiService {
     return (response.data || []).filter((c): c is Car => c != null);
   }
 
-  /** POST /manager/car — 0 = success */
   async createStaffCar(body: {
     carNumber: string;
     modelName: string;
@@ -366,7 +351,6 @@ class ApiService {
     }
   }
 
-  /** PUT /manager/car — 0 = success */
   async updateStaffCar(body: {
     id: number;
     carNumber: string;
@@ -380,7 +364,6 @@ class ApiService {
     }
   }
 
-  /** GET /manager/usercar */
   async getStaffUserCarLinks(params: {
     userId?: number;
     carId?: number;
@@ -392,7 +375,6 @@ class ApiService {
     return response.data || [];
   }
 
-  /** POST /manager/usercar — 0 = success */
   async addStaffUserCar(body: { userId: number; carId: number; ownsNow: boolean }): Promise<void> {
     const response = await this.dataClient.post<number>('/manager/usercar', body);
     if (response.data !== 0) {
@@ -400,7 +382,6 @@ class ApiService {
     }
   }
 
-  /** DELETE /manager/usercar?userId=&carId= */
   async deleteStaffUserCar(userId: number, carId: number): Promise<void> {
     const response = await this.dataClient.delete<number>('/manager/usercar', {
       params: { userId, carId },
@@ -416,7 +397,6 @@ class ApiService {
     return response.data || [];
   }
 
-  /** POST /manager/order — 0 = success */
   async createStaffOrder(body: {
     userId: number;
     carId: number;

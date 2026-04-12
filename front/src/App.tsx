@@ -26,7 +26,6 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   
   const dispatch = useDispatch();
   
-  // Update user in Redux when query returns data
   useEffect(() => {
     if (currentUser && !user) {
       dispatch(setUser(currentUser));

@@ -65,7 +65,6 @@ export function ProfilePage() {
       }
       
       await updateUserMutation(updateData).unwrap();
-      // Refresh user data
       const response = await (await fetch(`http://localhost:3002/customer/user`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })).json();
