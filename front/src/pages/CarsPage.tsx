@@ -32,13 +32,7 @@ export const CarsPage = observer(function CarsPage() {
       <Typography variant="h4" component="h1" gutterBottom>
         Мои автомобили
       </Typography>
-      <Typography component="div" variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Список ваших привязанных машин. Для каждой карточки — абстрактное фото по коду цвета из базы (файлы{' '}
-        <Box component="span" sx={{ fontFamily: 'monospace' }}>
-          public/cars/0.png … 9.png
-        </Box>
-        ); значения вне диапазона 0–9 показываются как «иной» (серый, код 9).
-      </Typography>
+      
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>

@@ -67,9 +67,7 @@ export const DashboardPage = observer(function DashboardPage() {
       <Typography variant="h4" component="h1" gutterBottom>
         Сводка
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Профиль, активные заказы и ваши автомобили (списком, без фото — по контракту).
-      </Typography>
+      
 
       <Box
         sx={{
@@ -109,9 +107,7 @@ export const DashboardPage = observer(function DashboardPage() {
                 Все заказы
               </Button>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              Статусы: ожидание, в процессе, ожидание машины
-            </Typography>
+            
             <Divider sx={{ mb: 1 }} />
             {activeOrders.length === 0 ? (
               <Typography color="text.secondary">Нет активных заказов</Typography>
@@ -135,9 +131,7 @@ export const DashboardPage = observer(function DashboardPage() {
                 Карточки с фото
               </Button>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              На дашборде — только текстовый список
-            </Typography>
+            
             <Divider sx={{ mb: 1 }} />
             {cars.length === 0 ? (
               <Typography color="text.secondary">Нет привязанных автомобилей</Typography>
