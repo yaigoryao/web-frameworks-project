@@ -59,7 +59,6 @@ export function UsersPage() {
   const { toasts, removeToast, success, error: showError } = useToast();
 
   const { data: rawUsers, isLoading } = useGetUsersQuery();
-  // Ensure users is always an array, never undefined or null
   const users = Array.isArray(rawUsers) ? rawUsers : [];
   const [deleteUserMutation] = useDeleteUserByLoginMutation();
   const [updateUserMutation] = useUpdateStaffUserMutation();
