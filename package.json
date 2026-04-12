@@ -4,7 +4,9 @@
   "workspaces": [
     "user-service",
     "data-service",
-    "shared"
+    "shared",
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "dev:user": "npm run --workspace=user-service dev",
@@ -17,10 +19,19 @@
     "build": "npm run build:shared && npm run build:user && npm run build:data",
     "watch:shared": "npm run --workspace=shared -- tsc -p tsconfig.json --watch",
     "watch:all": "concurrently \"npm run watch:shared\" \"npm run dev:user\" \"npm run dev:data\"",
-    "dev": "concurrently \"npm run dev:user\" \"npm run dev:data\""
+    "dev": "concurrently \"npm run dev:user\" \"npm run dev:data\"",
+    "dev:host": "npm run --workspace=host dev",
+    "dev:mfe-orders": "npm run --workspace=mfe-orders dev",
+    "dev:mfe-cars": "npm run --workspace=mfe-cars dev",
+    "dev:web": "concurrently -n orders,cars,host -c blue,magenta,green \"npm run dev:mfe-orders\" \"npm run dev:mfe-cars\" \"npm run dev:host\"",
+    "build:mfe-orders": "npm run --workspace=mfe-orders build",
+    "build:mfe-cars": "npm run --workspace=mfe-cars build",
+    "build:host": "npm run --workspace=host build",
+    "build:web": "npm run build:mfe-orders && npm run build:mfe-cars && npm run build:host"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.16"
+    "@nestjs/cli": "^11.0.16",
+    "concurrently": "^9.1.0"
   },
   "dependencies": {
     "@nestjs/swagger": "^11.2.6",

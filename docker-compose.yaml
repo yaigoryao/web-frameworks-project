@@ -108,11 +108,8 @@ services:
 
   front:
     build:
-      context: ./front
-      dockerfile: Dockerfile
-      args:
-        VITE_AUTH_API_BASE: /api/auth
-        VITE_DATA_API_BASE: /api/data
+      context: .
+      dockerfile: apps/host/Dockerfile
     container_name: front
     ports:
       - "5000:80"
