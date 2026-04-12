@@ -21,7 +21,6 @@ interface GetUserCarsParams {
 
 export const userCarApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Get user-car links
         getUserCarLinks: builder.query<UserCar[], GetUserCarsParams>({
             query: (params) => ({
                 url: '/manager/usercar',
@@ -32,7 +31,6 @@ export const userCarApiSlice = apiSlice.injectEndpoints({
             providesTags: ['UserCars'],
         }),
 
-        // Add user-car link
         addUserCar: builder.mutation<number, AddUserCarRequest>({
             query: (data) => ({
                 url: '/manager/usercar',
@@ -43,7 +41,6 @@ export const userCarApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['UserCars', 'Cars'],
         }),
 
-        // Update user-car link
         updateUserCar: builder.mutation<number, UpdateUserCarRequest>({
             query: (data) => ({
                 url: '/manager/usercar',
@@ -54,7 +51,6 @@ export const userCarApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['UserCars', 'Cars'],
         }),
 
-        // Delete user-car link
         deleteUserCar: builder.mutation<number, { userId: number; carId: number }>({
             query: ({ userId, carId }) => ({
                 url: '/manager/usercar',

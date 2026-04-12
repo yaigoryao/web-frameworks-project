@@ -11,7 +11,6 @@ interface GetRolesParams {
 
 export const rolesApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Get roles (cached, used by manager/owner)
         getRoles: builder.query<Role[], GetRolesParams>({
             query: (params) => ({
                 url: '/manager/role',
@@ -20,8 +19,7 @@ export const rolesApiSlice = apiSlice.injectEndpoints({
                 baseURL: DATA_API_BASE_URL,
             }),
             providesTags: ['Roles'],
-            // Aggressive cache for reference data
-            keepUnusedDataFor: 3600, // 1 hour
+            keepUnusedDataFor: 3600,
         }),
     }),
 });

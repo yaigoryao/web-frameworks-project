@@ -6,7 +6,6 @@ const DATA_API_BASE_URL = import.meta.env.VITE_DATA_API_BASE ?? 'http://localhos
 
 export const userApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Auth endpoints
         login: builder.mutation<LoginResponse, LoginRequest>({
             query: (credentials) => ({
                 url: '/login',
@@ -27,7 +26,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['User'],
         }),
 
-        // Get current user info
         getCurrentUser: builder.query<User, void>({
             query: () => ({
                 url: '/customer/user',
@@ -37,7 +35,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             providesTags: ['User'],
         }),
 
-        // Update current user (customer/user)
         updateCurrentUser: builder.mutation<number, CustomerUpdateUserRequest>({
             query: (data) => ({
                 url: '/customer/user',
@@ -48,7 +45,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['User'],
         }),
 
-        // Get staff user by ID (manager/user or owner/user)
         getStaffUser: builder.query<User, number>({
             query: (userId) => ({
                 url: '/manager/user',
@@ -59,7 +55,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             providesTags: ['User'],
         }),
 
-        // Update staff user (manager/user or owner/user)
         updateStaffUser: builder.mutation<number, StaffUpdateUserRequest>({
             query: (data) => ({
                 url: '/manager/user',
@@ -70,7 +65,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['User', 'Users'],
         }),
 
-        // Delete user by login
         deleteUserByLogin: builder.mutation<number, string>({
             query: (login) => ({
                 url: `/manager/users/${encodeURIComponent(login)}`,
@@ -80,7 +74,6 @@ export const userApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Users'],
         }),
 
-        // Check login availability
         checkLoginAvailability: builder.query<{ available: boolean }, string>({
             query: (login) => ({
                 url: '/manager/users/check-login',

@@ -14,7 +14,6 @@ interface GetUsersParams {
 
 export const usersApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Get users list (manager/owner)
         getUsers: builder.query<User[], GetUsersParams | void>({
             query: (params) => ({
                 url: '/manager/users',
@@ -23,7 +22,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
                 baseURL: DATA_API_BASE_URL,
             }),
             transformResponse: (response: any) => {
-                // Ensure response is always an array
                 if (Array.isArray(response)) {
                     return response;
                 }
@@ -35,7 +33,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
             providesTags: ['Users'],
         }),
 
-        // Create user (manager/owner)
         createUser: builder.mutation<CreateUserResponse, CreateUserRequest>({
             query: (data) => ({
                 url: '/manager/users',

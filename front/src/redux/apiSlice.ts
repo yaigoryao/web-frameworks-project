@@ -4,17 +4,14 @@ import axios from 'axios';
 const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE ?? 'http://localhost:3001';
 const DATA_API_BASE_URL = import.meta.env.VITE_DATA_API_BASE ?? 'http://localhost:3002';
 
-// Create axios instance for baseQuery
 const axiosInstance = axios.create();
 
-// Interface for API error responses
 interface ApiErrorResponse {
     message?: string;
     code?: string;
     status?: number;
 }
 
-// Custom baseQuery for axios with proper token handling
 export const customBaseQuery: BaseQueryFn<
     FetchArgs | { url: string; method: string; data?: unknown; params?: unknown; baseURL?: string },
     unknown,
@@ -26,7 +23,6 @@ export const customBaseQuery: BaseQueryFn<
     let params: unknown;
     let baseURL: string = DATA_API_BASE_URL;
 
-    // Handle both string URLs and object-style arguments
     if (typeof args === 'string') {
         url = args;
         method = 'GET';
@@ -38,12 +34,10 @@ export const customBaseQuery: BaseQueryFn<
         baseURL = (args as any).baseURL || DATA_API_BASE_URL;
     }
 
-    // Get token from state
     const state: any = getState();
     const token = state.auth?.accessToken;
     const refreshToken = localStorage.getItem('refreshToken');
 
-    // Build headers
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
@@ -64,10 +58,8 @@ export const customBaseQuery: BaseQueryFn<
 
         return { data: response.data };
     } catch (error) {
-        // Handle 401 with token refresh
         if (axios.isAxiosError(error) && error.response?.status === 401 && refreshToken && token) {
             try {
-                // Try to refresh token
                 const refreshResponse = await axiosInstance.post(
                     '/refresh',
                     {
@@ -80,12 +72,9 @@ export const customBaseQuery: BaseQueryFn<
                     }
                 );
 
-                // Update token in state and localStorage
                 if (refreshResponse.data?.accessToken) {
-                    // Note: We'll dispatch auth slice action from middleware
                     localStorage.setItem('accessToken', refreshResponse.data.accessToken);
 
-                    // Retry original request with new token
                     const retryHeaders = {
                         ...headers,
                         Authorization: `Bearer ${refreshResponse.data.accessToken}`,
@@ -103,7 +92,6 @@ export const customBaseQuery: BaseQueryFn<
                     return { data: retryResponse.data };
                 }
             } catch (refreshError) {
-                // Refresh failed, will handle in middleware
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
             }
