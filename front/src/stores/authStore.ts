@@ -10,7 +10,7 @@ export class AuthStore {
 
   constructor(root: RootStore) {
     this.root = root;
-    makeAutoObservable(this);
+    makeAutoObservable(this, {}, { autoBind: true });
     void this.bootstrap();
   }
 
@@ -55,7 +55,7 @@ export class AuthStore {
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0fe60' },
       body: JSON.stringify({
         sessionId: 'e0fe60',
-        runId: 'pre-fix',
+        runId: 'post-fix',
         hypothesisId: 'H1',
         location: 'authStore.ts:login',
         message: 'AuthStore.login entry',
@@ -84,7 +84,7 @@ export class AuthStore {
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0fe60' },
       body: JSON.stringify({
         sessionId: 'e0fe60',
-        runId: 'pre-fix',
+        runId: 'post-fix',
         hypothesisId: 'H1',
         location: 'authStore.ts:logout',
         message: 'AuthStore.logout entry',
