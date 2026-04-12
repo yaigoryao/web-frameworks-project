@@ -5,14 +5,14 @@ WORKDIR /repo
 
 COPY . .
 
-RUN npm ci
+RUN npm ci --include=dev
 
 ENV NODE_ENV=production
 ENV AUTH_API_BASE_URL=/api/auth
 ENV DATA_API_BASE_URL=/api/data
 
-RUN WEB_PUBLIC_PATH=/mfe-orders/ npm run build --workspace=mfe-orders
-RUN WEB_PUBLIC_PATH=/mfe-cars/ npm run build --workspace=mfe-cars
+RUN WEB_PUBLIC_PATH=/mfe-orders/ npm run build --workspace=mfeOrders
+RUN WEB_PUBLIC_PATH=/mfe-cars/ npm run build --workspace=mfeCars
 RUN npm run build --workspace=host
 
 FROM nginx:1.25-alpine

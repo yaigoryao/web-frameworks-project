@@ -1,39 +1,43 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const { createHostConfig } = require('@monorepo/webpack-config');
+const { createWebpackConfig } = require('@monorepo/webpack-config');
 const pkg = require('./package.json');
 
-const isProd = process.env.NODE_ENV === 'production';
-const mfeOrdersOrigin =
-  process.env.MFE_ORDERS_ORIGIN || (isProd ? '/mfe-orders' : 'http://localhost:3003');
-const mfeCarsOrigin =
-  process.env.MFE_CARS_ORIGIN || (isProd ? '/mfe-cars' : 'http://localhost:3004');
+module.exports = (env, argv) => {
+  const mode = argv?.mode ?? (process.env.NODE_ENV === 'production' ? 'production' : 'development');
+  const isProd = mode === 'production';
+  const mfeOrdersOrigin =
+    process.env.MFE_ORDERS_ORIGIN || (isProd ? '/mfe-orders' : 'http://localhost:3003');
+  const mfeCarsOrigin =
+    process.env.MFE_CARS_ORIGIN || (isProd ? '/mfe-cars' : 'http://localhost:3004');
 
-module.exports = () => {
-  const config = createHostConfig({
-    dirname: __dirname,
-    port: Number(process.env.HOST_PORT) || 3000,
-    remotes: {
-      mfeOrders: `mfeOrders@${mfeOrdersOrigin}/remoteEntry.js`,
-      mfeCars: `mfeCars@${mfeCarsOrigin}/remoteEntry.js`,
-    },
+  return createWebpackConfig({
+    mode,
+    rootDir: __dirname,
+    entry: path.resolve(__dirname, 'src/index.tsx'),
+    outputPath: path.resolve(__dirname, 'dist'),
+    htmlTemplate: path.resolve(__dirname, 'public/index.html'),
+    devServerPort: Number(process.env.HOST_PORT) || 3000,
+    devServerProxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+      },
+    ],
     packageJson: pkg,
-    devServer: {
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3002',
-          changeOrigin: true,
-          pathRewrite: { '^/api': '' },
-        },
+    federation: {
+      name: 'host',
+      remotes: {
+        mfeOrders: `mfeOrders@${mfeOrdersOrigin}/remoteEntry.js`,
+        mfeCars: `mfeCars@${mfeCarsOrigin}/remoteEntry.js`,
       },
     },
+    extraPlugins: [
+      new CopyWebpackPlugin({
+        patterns: [{ from: path.resolve(__dirname, 'public/cars'), to: 'cars' }],
+      }),
+    ],
   });
-
-  config.plugins.push(
-    new CopyWebpackPlugin({
-      patterns: [{ from: path.join(__dirname, 'public/cars'), to: 'cars' }],
-    })
-  );
-
-  return config;
 };

@@ -120,6 +120,29 @@ services:
       - app-network
     restart: unless-stopped
 
+  # Отдельные образы microfrontend (remoteEntry + чанки). Для host укажите MFE_*_ORIGIN при сборке, например http://localhost:5003
+  mfe-orders:
+    build:
+      context: .
+      dockerfile: apps/mfe-orders/Dockerfile
+    container_name: mfe_orders
+    ports:
+      - "5003:80"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mfe-cars:
+    build:
+      context: .
+      dockerfile: apps/mfe-cars/Dockerfile
+    container_name: mfe_cars
+    ports:
+      - "5004:80"
+    networks:
+      - app-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
 

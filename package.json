@@ -21,17 +21,26 @@
     "watch:all": "concurrently \"npm run watch:shared\" \"npm run dev:user\" \"npm run dev:data\"",
     "dev": "concurrently \"npm run dev:user\" \"npm run dev:data\"",
     "dev:host": "npm run --workspace=host dev",
-    "dev:mfe-orders": "npm run --workspace=mfe-orders dev",
-    "dev:mfe-cars": "npm run --workspace=mfe-cars dev",
+    "dev:mfe-orders": "npm run --workspace=mfeOrders dev",
+    "dev:mfe-cars": "npm run --workspace=mfeCars dev",
     "dev:web": "concurrently -n orders,cars,host -c blue,magenta,green \"npm run dev:mfe-orders\" \"npm run dev:mfe-cars\" \"npm run dev:host\"",
-    "build:mfe-orders": "npm run --workspace=mfe-orders build",
-    "build:mfe-cars": "npm run --workspace=mfe-cars build",
+    "build:mfe-orders": "npm run --workspace=mfeOrders build",
+    "build:mfe-cars": "npm run --workspace=mfeCars build",
     "build:host": "npm run --workspace=host build",
     "build:web": "npm run build:mfe-orders && npm run build:mfe-cars && npm run build:host"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.1.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.4",
+    "html-webpack-plugin": "^5.6.6",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.7",
+    "typescript": "^5.9.3",
+    "webpack": "^5.106.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.3"
   },
   "dependencies": {
     "@nestjs/swagger": "^11.2.6",
