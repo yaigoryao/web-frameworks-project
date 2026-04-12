@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -14,9 +14,26 @@ import { StaffUserCarsPage } from './pages/StaffUserCarsPage';
 import { StaffUserOrdersPage } from './pages/StaffUserOrdersPage';
 import { Toast } from './components/Toast';
 import { useToast } from './components/Toast';
+import { useGetCurrentUserQuery } from './redux/slices/userApiSlice';
+import { setUser } from './redux/slices/authSlice';
+import type { RootState } from './redux/store';
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { user, accessToken } = useSelector((state: RootState) => state.auth);
+  const { data: currentUser, isLoading } = useGetCurrentUserQuery(undefined, {
+    skip: !accessToken,
+  });
+  
+  const dispatch = useDispatch();
+  
+  // Update user in Redux when query returns data
+  useEffect(() => {
+    if (currentUser && !user) {
+      dispatch(setUser(currentUser));
+    }
+  }, [currentUser, dispatch, user]);
+  
+  const isAuthenticated = !!accessToken;
 
   if (isLoading) {
     return <div className="loading">Загрузка...</div>;
@@ -37,11 +54,8 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="loading">Загрузка...</div>;
-  }
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const isAuthenticated = !!accessToken;
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -51,9 +65,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { userRole } = useSelector((state: RootState) => state.auth);
   const { toasts, removeToast } = useToast();
-  const userRole = user?.role?.roleName?.toLowerCase() || '';
   
   const canManageUsers = userRole === 'owner' || userRole === 'manager';
 
@@ -157,9 +170,7 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

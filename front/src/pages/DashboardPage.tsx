@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Button,
@@ -9,11 +10,11 @@ import {
   Divider,
   Typography,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import { useGetCustomerCarsQuery } from '../redux/slices/carApiSlice';
+import { useGetCustomerOrdersQuery } from '../redux/slices/orderApiSlice';
 import { Car, Order, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
-
+import type { RootState } from '../redux/store';
 
 const ACTIVE_STATUS_NAMES = new Set(['pending', 'in_process', 'waiting_car']);
 
@@ -33,33 +34,14 @@ function carLine(c: Car): string {
 }
 
 export function DashboardPage() {
-  const { user } = useAuth();
-  const { toasts, removeToast, error: showError } = useToast();
-  const [cars, setCars] = useState<Car[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const { toasts, removeToast } = useToast();
+  
+  // These queries will use cached data if already loaded elsewhere
+  const { data: cars = [], isLoading: carsLoading } = useGetCustomerCarsQuery({ limit: 100, offset: 0 });
+  const { data: orders = [], isLoading: ordersLoading } = useGetCustomerOrdersQuery({});
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [carsData, ordersData] = await Promise.all([
-        api.getCars({ limit: 100, offset: 0 }),
-        api.getOrders({ id: 0, limit: 100, offset: 0 }),
-      ]);
-      setCars(carsData);
-      setOrders(ordersData);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setCars([]);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const loading = carsLoading || ordersLoading;
 
   const activeOrders = useMemo(() => orders.filter(isActiveOrder), [orders]);
 

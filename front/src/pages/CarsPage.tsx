@@ -1,38 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
-import { api } from '../services/api';
-import { Car, COLOR_MAP, normalizeCarColorIndex } from '../types';
+import { Box, Card, CardContent, CardMedia, Chip, CircularProgress, Typography } from '@mui/material';
+import { useGetCustomerCarsQuery } from '../redux/slices/carApiSlice';
+import { COLOR_MAP, normalizeCarColorIndex } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
 export function CarsPage() {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cars = [], isLoading, error } = useGetCustomerCarsQuery({ limit: 100, offset: 0 });
   const { toasts, removeToast, error: showError } = useToast();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await api.getCars({ limit: 100, offset: 0 });
-      setCars(data);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setCars([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Use error from query
+  if (error) {
+    showError('Ошибка при загрузке машин');
+  }
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
@@ -40,14 +18,13 @@ export function CarsPage() {
         Мои автомобили
       </Typography>
       <Typography component="div" variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-
         <Box component="span" sx={{ fontFamily: 'monospace' }}>
           
         </Box>
         
       </Typography>
 
-      {loading ? (
+      {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>

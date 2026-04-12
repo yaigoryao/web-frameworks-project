@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch } from 'react-redux';
+import { useRegisterMutation } from '../redux/slices/userApiSlice';
+import { setToken } from '../redux/slices/authSlice';
 import './AuthPage.css';
 
 export function RegisterPage() {
@@ -15,7 +17,8 @@ export function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const dispatch = useDispatch();
+  const [registerMutation] = useRegisterMutation();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,14 +37,19 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register({
+      const response = await registerMutation({
         login: formData.login,
         password: formData.password,
         name: formData.name,
         surname: formData.surname,
         patronymic: formData.patronymic || undefined,
         phoneNumber: formData.phoneNumber,
-      });
+      }).unwrap();
+      
+      dispatch(setToken({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken
+      }));
       navigate('/dashboard');
     } catch (err) {
       setError('Ошибка регистрации. Попробуйте другой логин.');

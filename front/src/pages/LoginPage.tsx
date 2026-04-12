@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '../redux/slices/userApiSlice';
+import { setToken } from '../redux/slices/authSlice';
 import { api } from '../services/api';
 import './AuthPage.css';
 
@@ -9,7 +11,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login: authLogin } = useAuth();
+  const dispatch = useDispatch();
+  const [loginMutation] = useLoginMutation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,7 +21,12 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      await authLogin({ login, password });
+      const response = await loginMutation({ login, password }).unwrap();
+      dispatch(setToken({ 
+        accessToken: response.accessToken, 
+        refreshToken: response.refreshToken 
+      }));
+      // After setting token, redirect - user data will be loaded in ProtectedRoute
       navigate('/dashboard');
     } catch (err) {
       const { message } = api.parseApiError(err);

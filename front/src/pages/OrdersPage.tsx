@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -14,7 +14,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { api } from '../services/api';
+import { useGetCustomerOrdersQuery } from '../redux/slices/orderApiSlice';
 import { Order, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
@@ -31,28 +31,15 @@ function formatDt(dateStr: string | null | undefined): string {
 }
 
 export function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: orders = [], isLoading, error } = useGetCustomerOrdersQuery({});
   const [activeOnly, setActiveOnly] = useState(false);
   const [detail, setDetail] = useState<Order | null>(null);
   const { toasts, removeToast, error: showError } = useToast();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await api.getOrders({ id: 0, limit: 100, offset: 0 });
-      setOrders(data);
-    } catch (err) {
-      showError(api.parseApiError(err).message);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Use error from query
+  if (error) {
+    showError('Ошибка при загрузке заказов');
+  }
 
   const visible = useMemo(
     () => (activeOnly ? orders.filter(isActiveOrder) : orders),
@@ -63,6 +50,8 @@ export function OrdersPage() {
     const key = o.orderStatus?.orderStatusName?.toLowerCase() || '';
     return ORDER_STATUS_MAP[key] || o.orderStatus?.orderStatusName || '—';
   };
+
+
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1000, mx: 'auto' }}>
@@ -76,7 +65,7 @@ export function OrdersPage() {
         sx={{ mb: 2, display: 'block' }}
       />
 
-      {loading ? (
+      {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
           <CircularProgress />
         </Box>

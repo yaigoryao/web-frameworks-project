@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Button,
@@ -35,11 +36,12 @@ import {
   ToggleOff as ToggleOffIcon,
   ToggleOn as ToggleOnIcon,
 } from '@mui/icons-material';
-import { api } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useGetUsersQuery } from '../redux/slices/usersApiSlice';
+import { useUpdateStaffUserMutation, useDeleteUserByLoginMutation } from '../redux/slices/userApiSlice';
 import { User, ROLE_NAMES } from '../types';
 import { AddUserModal } from '../components/AddUserModal';
 import { Toast, useToast } from '../components/Toast';
+import type { RootState } from '../redux/store';
 
 type SortField = 'name' | 'surname' | 'login' | 'role';
 type SortOrder = 'asc' | 'desc';
@@ -52,11 +54,15 @@ const OWNER_ROLE_FILTER: { value: string; label: string }[] = [
 ];
 
 export function UsersPage() {
-  const { user } = useAuth();
+  const userRole = useSelector((state: RootState) => state.auth.userRole);
+  const currentUser = useSelector((state: RootState) => state.auth.user);
   const { toasts, removeToast, success, error: showError } = useToast();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: rawUsers, isLoading } = useGetUsersQuery();
+  // Ensure users is always an array, never undefined or null
+  const users = Array.isArray(rawUsers) ? rawUsers : [];
+  const [deleteUserMutation] = useDeleteUserByLoginMutation();
+  const [updateUserMutation] = useUpdateStaffUserMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -65,9 +71,8 @@ export function UsersPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalUsers, setTotalUsers] = useState(0);
 
-  const currentUserRoleName = user?.role?.roleName?.toLowerCase() || '';
+  const currentUserRoleName = userRole?.toLowerCase() || '';
   const isOwner = currentUserRoleName === 'owner';
   const isManager = currentUserRoleName === 'manager';
   const canAddUsers = isOwner || isManager;
@@ -77,45 +82,59 @@ export function UsersPage() {
     return () => window.clearTimeout(t);
   }, [searchInput]);
 
-  const apiSortField = sortField === 'role' ? 'role' : sortField;
-
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const result = await api.getUsers({
-        role: isOwner ? (roleFilter || undefined) : undefined,
-        search: debouncedSearch || undefined,
-        limit: rowsPerPage,
-        offset: page * rowsPerPage,
-        sortBy: apiSortField,
-        sortOrder,
-      });
-      setUsers(result.users);
-      setTotalUsers(result.total);
-    } catch (err) {
-      const apiError = api.parseApiError(err);
-      showError(`Ошибка загрузки пользователей: ${apiError.message}`);
-    } finally {
-      setIsLoading(false);
+  // Filter and sort users locally
+  const filteredUsers = useMemo(() => {
+    // Ensure users is always an array
+    if (!Array.isArray(users)) {
+      return [];
     }
-  }, [
-    page,
-    rowsPerPage,
-    roleFilter,
-    debouncedSearch,
-    apiSortField,
-    sortOrder,
-    showError,
-    isOwner,
-  ]);
+    
+    let result = users;
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    // Filter by role if owner
+    if (isOwner && roleFilter) {
+      result = result.filter(u => u.role?.roleName?.toLowerCase() === roleFilter);
+    } else if (isManager) {
+      // Managers can only see regular users
+      result = result.filter(u => u.role?.roleName?.toLowerCase() === 'user');
+    }
 
-  useEffect(() => {
-    setPage(0);
-  }, [roleFilter, debouncedSearch, rowsPerPage]);
+    // Filter by search term
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      result = result.filter(u =>
+        u.login?.toLowerCase().includes(q) ||
+        u.name?.toLowerCase().includes(q) ||
+        u.surname?.toLowerCase().includes(q) ||
+        u.phoneNumber?.toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
+    result = [...result].sort((a, b) => {
+      let aVal: any = sortField === 'role' ? a.role?.roleName : (a as any)[sortField];
+      let bVal: any = sortField === 'role' ? b.role?.roleName : (b as any)[sortField];
+      aVal = aVal?.toString().toLowerCase() || '';
+      bVal = bVal?.toString().toLowerCase() || '';
+
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+    }, [debouncedSearch, roleFilter, sortField, sortOrder, isOwner, isManager, users]
+  );
+
+  // Paginated users
+  const paginatedUsers = useMemo(() => {
+    if (!Array.isArray(filteredUsers)) {
+      return [];
+    }
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return filteredUsers.slice(start, end);
+  }, [filteredUsers, page, rowsPerPage]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -128,18 +147,14 @@ export function UsersPage() {
 
   const handleAddUserSuccess = () => {
     success('Пользователь успешно создан!');
-    fetchUsers();
   };
 
-  const canModifyUser = useCallback(
-    (u: User) => {
-      if (u.id === user?.id) return false;
-      if (isOwner) return true;
-      if (isManager) return u.role?.roleName?.toLowerCase() === 'user';
-      return false;
-    },
-    [user?.id, isOwner, isManager]
-  );
+  const canModifyUser = (u: User) => {
+    if (u.id === currentUser?.id) return false;
+    if (isOwner) return true;
+    if (isManager) return u.role?.roleName?.toLowerCase() === 'user';
+    return false;
+  };
 
   const handleDeleteUser = async (target: User) => {
     if (!canModifyUser(target)) return;
@@ -147,19 +162,17 @@ export function UsersPage() {
     if (!window.confirm(`Удалить пользователя «${label}» (${target.login})?`)) return;
 
     try {
-      await api.deleteUserByLogin(target.login);
+      await deleteUserMutation(target.login).unwrap();
       success('Пользователь удалён');
-      fetchUsers();
     } catch (err) {
-      const apiError = api.parseApiError(err);
-      showError(apiError.status === 403 ? 'Недостаточно прав для удаления' : apiError.message);
+      showError('Ошибка при удалении пользователя');
     }
   };
 
   const handleToggleStatus = async (target: User) => {
     if (!canModifyUser(target)) return;
     try {
-      await api.updateStaffUser({
+      await updateUserMutation({
         login: target.login,
         password: null,
         name: null,
@@ -168,12 +181,10 @@ export function UsersPage() {
         phoneNumber: null,
         roleId: null,
         isActive: !target.isActive,
-      });
+      }).unwrap();
       success(target.isActive ? 'Пользователь деактивирован' : 'Пользователь активирован');
-      fetchUsers();
     } catch (err) {
-      const apiError = api.parseApiError(err);
-      showError(apiError.message);
+      showError('Ошибка при обновлении пользователя');
     }
   };
 
@@ -323,14 +334,14 @@ export function UsersPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {users.length === 0 ? (
+                {paginatedUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                       <Typography color="text.secondary">Пользователи не найдены</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  users.map((u) => (
+                  paginatedUsers.map((u) => (
                     <TableRow
                       key={u.id}
                       hover
@@ -408,7 +419,7 @@ export function UsersPage() {
             </Table>
             <TablePagination
               component="div"
-              count={totalUsers}
+              count={filteredUsers.length}
               page={page}
               onPageChange={(_, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}

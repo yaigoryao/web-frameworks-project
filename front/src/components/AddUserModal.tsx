@@ -16,7 +16,8 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { api } from '../services/api';
+import { useCreateUserMutation } from '../redux/slices/usersApiSlice';
+import { useCheckLoginAvailabilityQuery } from '../redux/slices/userApiSlice';
 import { CreateUserRequest } from '../types';
 
 interface AddUserModalProps {
@@ -47,11 +48,18 @@ const emptyForm = (): CreateUserRequest => ({
 });
 
 export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: AddUserModalProps) {
-  const [formData, setFormData] = useState<CreateUserRequest>(emptyForm);
+  const [formData, setFormData] = useState<CreateUserRequest>(emptyForm());
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingLogin, setIsCheckingLogin] = useState(false);
   const [loginChecked, setLoginChecked] = useState(false);
+  const [checkLogin, setCheckLogin] = useState<string | null>(null);
+
+  const { data: loginCheckResult } = useCheckLoginAvailabilityQuery(checkLogin || '', {
+    skip: !checkLogin,
+  });
+
+  const [createUserMutation] = useCreateUserMutation();
 
   const isOwner = currentUserRole === 'owner';
   const loginDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -61,6 +69,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
       setFormData(emptyForm());
       setErrors({});
       setLoginChecked(false);
+      setCheckLogin(null);
       if (loginDebounceRef.current) {
         clearTimeout(loginDebounceRef.current);
         loginDebounceRef.current = null;
@@ -108,22 +117,23 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
       setLoginChecked(false);
       return;
     }
-    loginDebounceRef.current = setTimeout(async () => {
+    loginDebounceRef.current = setTimeout(() => {
       setIsCheckingLogin(true);
-      try {
-        const result = await api.checkEmailAvailability(trimmed);
-        setErrors((prev) => ({
-          ...prev,
-          login: result.available ? undefined : 'Логин уже занят',
-        }));
-        setLoginChecked(result.available);
-      } catch {
-        setLoginChecked(false);
-      } finally {
-        setIsCheckingLogin(false);
-      }
+      setCheckLogin(trimmed);
     }, 500);
   }, []);
+
+  // Update when login check result arrives
+  useEffect(() => {
+    if (loginCheckResult) {
+      setErrors((prev) => ({
+        ...prev,
+        login: loginCheckResult.available ? undefined : 'Логин уже занят',
+      }));
+      setLoginChecked(loginCheckResult.available);
+      setIsCheckingLogin(false);
+    }
+  }, [loginCheckResult]);
 
   useEffect(() => {
     return () => {
@@ -184,17 +194,16 @@ export function AddUserModal({ isOpen, onClose, onSuccess, currentUserRole }: Ad
     }
 
     try {
-      await api.createUser(payload);
+      await createUserMutation(payload).unwrap();
       onSuccess();
       onClose();
-    } catch (error) {
-      const apiError = api.parseApiError(error);
-      if (apiError.status === 409 || apiError.message.toLowerCase().includes('логин')) {
+    } catch (error: any) {
+      if (error.status === 409 || error.data?.message?.toLowerCase().includes('логин')) {
         setErrors((prev) => ({ ...prev, login: 'Логин уже занят' }));
-      } else if (apiError.status === 403) {
+      } else if (error.status === 403) {
         setErrors((prev) => ({ ...prev, general: 'Недостаточно прав' }));
       } else {
-        setErrors((prev) => ({ ...prev, general: apiError.message }));
+        setErrors((prev) => ({ ...prev, general: error.data?.message || 'Ошибка при создании пользователя' }));
       }
     } finally {
       setIsLoading(false);

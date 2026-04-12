@@ -1,11 +1,21 @@
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useUpdateCurrentUserMutation } from '../redux/slices/userApiSlice';
+import { setUser } from '../redux/slices/authSlice';
+import { useGetCurrentUserQuery } from '../redux/slices/userApiSlice';
 import { CustomerUpdateUserRequest } from '../types';
+import type { RootState } from '../redux/store';
 import './ProfilePage.css';
 
 export function ProfilePage() {
-  const { user } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.accessToken);
+  const dispatch = useDispatch();
+  
+  // Load current user data
+  useGetCurrentUserQuery(undefined, { skip: !token });
+  
+  const [updateUserMutation] = useUpdateCurrentUserMutation();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     surname: user?.surname || '',
@@ -15,6 +25,17 @@ export function ProfilePage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        surname: user.surname || '',
+        patronymic: user.patronymic || '',
+        phoneNumber: user.phoneNumber || '',
+      });
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,7 +65,13 @@ export function ProfilePage() {
         updateData.password = password;
       }
       
-      await api.updateUserInfo(updateData);
+      await updateUserMutation(updateData).unwrap();
+      // Refresh user data
+      const response = await (await fetch(`http://localhost:3002/customer/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })).json();
+      dispatch(setUser(response));
+      
       setMessage('Профиль успешно обновлён!');
       setPassword('');
     } catch (error) {

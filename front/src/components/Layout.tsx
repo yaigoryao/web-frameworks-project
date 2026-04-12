@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearAuth } from '../redux/slices/authSlice';
+import type { RootState } from '../redux/store';
 import './Layout.css';
 
 interface LayoutProps {
@@ -9,11 +11,19 @@ interface LayoutProps {
 }
 
 export function Layout({ children, allowedRoles = [] }: LayoutProps) {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, accessToken } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
   const canSeeUsers = allowedRoles.includes('owner') || allowedRoles.includes('manager');
+  const isAuthenticated = !!accessToken;
+
+  const handleLogout = () => {
+    dispatch(clearAuth());
+    navigate('/login');
+  };
 
   return (
     <div className="layout">
@@ -53,7 +63,7 @@ export function Layout({ children, allowedRoles = [] }: LayoutProps) {
                   {user.role.roleName}
                 </span>
               )}
-              <button onClick={logout} className="btn-logout">
+              <button onClick={handleLogout} className="btn-logout">
                 Logout
               </button>
             </>
