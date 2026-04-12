@@ -38,6 +38,10 @@ export class AuthService {
 
         if (!passwordMatch) throw new UnauthorizedException("Неверный пароль и/или логин!");//errBuilder.addErrorMessage('Неверный пароль');
 
+        if (!user!.isActive) {
+            throw new UnauthorizedException('Ваш аккаунт неактивен, обратитесь к нашему администратору');
+        }
+
         //if (errBuilder.hasErrors()) throw errBuilder.build();
 
         const tokens = await this.refreshUserTokens(user!);
@@ -61,6 +65,10 @@ export class AuthService {
 
         if (user!.refreshToken !== refreshToken) throw new UnauthorizedException("Неверный refresh token");
         //")// errBuilder.addErrorMessage('Неверный refresh token');
+
+        if (!user!.isActive) {
+            throw new UnauthorizedException('Ваш аккаунт неактивен, обратитесь к нашему администратору');
+        }
 
         const tokens = await this.refreshUserTokens(user!);
 

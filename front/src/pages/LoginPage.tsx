@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import './AuthPage.css';
 
 export function LoginPage() {
@@ -20,7 +21,9 @@ export function LoginPage() {
       await authLogin({ login, password });
       navigate('/dashboard');
     } catch (err) {
-      setError('Неверный логин или пароль');
+      const { message } = api.parseApiError(err);
+      const text = Array.isArray(message) ? message.join(' ') : message;
+      setError(text || 'Неверный логин или пароль');
     } finally {
       setIsLoading(false);
     }

@@ -41,7 +41,7 @@ import { User, ROLE_NAMES } from '../types';
 import { AddUserModal } from '../components/AddUserModal';
 import { Toast, useToast } from '../components/Toast';
 
-type SortField = 'name' | 'surname' | 'login' | 'createdAt' | 'role';
+type SortField = 'name' | 'surname' | 'login' | 'role';
 type SortOrder = 'asc' | 'desc';
 
 const OWNER_ROLE_FILTER: { value: string; label: string }[] = [
@@ -61,8 +61,8 @@ export function UsersPage() {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const [sortField, setSortField] = useState<SortField>('createdAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortField, setSortField] = useState<SortField>('surname');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -175,15 +175,6 @@ export function UsersPage() {
       const apiError = api.parseApiError(err);
       showError(apiError.message);
     }
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
   };
 
   const roleChipColor = useMemo(
@@ -327,15 +318,6 @@ export function UsersPage() {
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>Телефон</TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortField === 'createdAt'}
-                      direction={sortField === 'createdAt' ? sortOrder : 'asc'}
-                      onClick={() => handleSort('createdAt')}
-                    >
-                      Создан
-                    </TableSortLabel>
-                  </TableCell>
                   <TableCell>Статус</TableCell>
                   <TableCell align="right">Действия</TableCell>
                 </TableRow>
@@ -343,7 +325,7 @@ export function UsersPage() {
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                       <Typography color="text.secondary">Пользователи не найдены</Typography>
                     </TableCell>
                   </TableRow>
@@ -366,7 +348,6 @@ export function UsersPage() {
                         />
                       </TableCell>
                       <TableCell>{u.phoneNumber || '—'}</TableCell>
-                      <TableCell>{formatDate(u.createdAt)}</TableCell>
                       <TableCell>
                         <Chip
                           size="small"
