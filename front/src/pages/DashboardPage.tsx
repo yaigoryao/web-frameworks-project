@@ -14,7 +14,7 @@ import { api } from '../services/api';
 import { Car, Order, ORDER_STATUS_MAP } from '../types';
 import { Toast, useToast } from '../components/Toast';
 
-/** Как в docs/readme.md и на странице заказов */
+
 const ACTIVE_STATUS_NAMES = new Set(['pending', 'in_process', 'waiting_car']);
 
 function isActiveOrder(o: Order): boolean {

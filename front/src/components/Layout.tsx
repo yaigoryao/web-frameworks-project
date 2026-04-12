@@ -24,21 +24,21 @@ export function Layout({ children, allowedRoles = [] }: LayoutProps) {
         {isAuthenticated && (
           <div className="navbar-menu">
             <Link to="/dashboard" className={isActive('/dashboard') ? 'active' : ''}>
-              Dashboard
+              Главная
             </Link>
             <Link to="/cars" className={isActive('/cars') ? 'active' : ''}>
-              Cars
+              Машины
             </Link>
             <Link to="/orders" className={isActive('/orders') ? 'active' : ''}>
-              Orders
+              Заказы
             </Link>
             {canSeeUsers && (
               <Link to="/users" className={isActive('/users') ? 'active' : ''}>
-                Users
+                Пользователи
               </Link>
             )}
             <Link to="/profile" className={isActive('/profile') ? 'active' : ''}>
-              Profile
+              Профиль
             </Link>
           </div>
         )}

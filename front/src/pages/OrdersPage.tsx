@@ -72,7 +72,7 @@ export function OrdersPage() {
 
       <FormControlLabel
         control={<Switch checked={activeOnly} onChange={(_, v) => setActiveOnly(v)} />}
-        label="Только активные (ожидание, в процессе, ожидание машины)"
+        label="Только активные"
         sx={{ mb: 2, display: 'block' }}
       />
 
