@@ -25,7 +25,6 @@ interface GetCarsParams {
 
 export const carApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Get customer's cars
         getCustomerCars: builder.query<Car[], Omit<CustomerGetCarsRequest, 'limit' | 'offset'> & { limit: number; offset: number }>({
             query: (params) => ({
                 url: '/customer/car',
@@ -36,8 +35,6 @@ export const carApiSlice = apiSlice.injectEndpoints({
             providesTags: ['Cars'],
         }),
 
-        // Get staff cars (manager/car or owner/car) - cached by Cars tag
-        // This endpoint reuses the same cache for different userId filters
         getStaffCars: builder.query<Car[], GetCarsParams>({
             query: (params) => ({
                 url: '/manager/car',
@@ -51,7 +48,6 @@ export const carApiSlice = apiSlice.injectEndpoints({
                     : [{ type: 'Cars', id: 'LIST' }],
         }),
 
-        // Create customer car
         createStaffCar: builder.mutation<number, AddCarRequest>({
             query: (data) => ({
                 url: '/manager/car',
@@ -62,7 +58,6 @@ export const carApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Cars'],
         }),
 
-        // Update car
         updateStaffCar: builder.mutation<number, UpdateCarRequest>({
             query: (data) => ({
                 url: '/manager/car',

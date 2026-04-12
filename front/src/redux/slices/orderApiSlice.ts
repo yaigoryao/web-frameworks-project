@@ -54,7 +54,6 @@ interface GetOrdersParams {
 
 export const orderApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Get customer orders
         getCustomerOrders: builder.query<Order[], Partial<CustomerGetOrdersRequest>>({
             query: (params) => ({
                 url: '/customer/order',
@@ -65,7 +64,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             providesTags: ['Orders'],
         }),
 
-        // Create customer order
         createCustomerOrder: builder.mutation<number, CustomerAddOrderRequest>({
             query: (data) => ({
                 url: '/customer/order',
@@ -76,7 +74,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-        // Update customer order
         updateCustomerOrder: builder.mutation<number, CustomerUpdateOrderRequest>({
             query: (data) => ({
                 url: '/customer/order',
@@ -87,7 +84,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-        // Delete customer order
         deleteCustomerOrder: builder.mutation<number, number>({
             query: (orderId) => ({
                 url: `/customer/order/${orderId}`,
@@ -97,7 +93,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-        // Get staff orders (manager/order or owner/order)
         getStaffOrders: builder.query<Order[], GetOrdersParams>({
             query: (params) => ({
                 url: '/manager/order',
@@ -111,7 +106,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
                     : [{ type: 'Orders', id: 'LIST' }],
         }),
 
-        // Create staff order
         createStaffOrder: builder.mutation<number, StaffAddOrderRequest>({
             query: (data) => ({
                 url: '/manager/order',
@@ -122,7 +116,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-        // Update staff order
         updateStaffOrder: builder.mutation<number, StaffUpdateOrderRequest>({
             query: (data) => ({
                 url: '/manager/order',
@@ -133,7 +126,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-        // Delete staff order
         deleteStaffOrder: builder.mutation<number, number>({
             query: (orderId) => ({
                 url: `/manager/order/${orderId}`,
