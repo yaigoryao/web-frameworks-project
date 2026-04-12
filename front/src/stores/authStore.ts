@@ -49,25 +49,6 @@ export class AuthStore {
   }
 
   async login(data: LoginRequest): Promise<void> {
-    // #region agent log
-    fetch('http://127.0.0.1:7647/ingest/5dbce222-9957-4ad6-b6f1-d80f014d3c87', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0fe60' },
-      body: JSON.stringify({
-        sessionId: 'e0fe60',
-        runId: 'post-fix',
-        hypothesisId: 'H1',
-        location: 'authStore.ts:login',
-        message: 'AuthStore.login entry',
-        data: {
-          thisUndefined: this === undefined,
-          thisStrictNull: this == null,
-          hasRefreshUser: typeof (this as AuthStore | undefined)?.refreshUser,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     await api.login(data);
     await this.refreshUser();
   }
@@ -78,25 +59,6 @@ export class AuthStore {
   }
 
   logout(): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7647/ingest/5dbce222-9957-4ad6-b6f1-d80f014d3c87', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0fe60' },
-      body: JSON.stringify({
-        sessionId: 'e0fe60',
-        runId: 'post-fix',
-        hypothesisId: 'H1',
-        location: 'authStore.ts:logout',
-        message: 'AuthStore.logout entry',
-        data: {
-          thisUndefined: this === undefined,
-          thisStrictNull: this == null,
-          hasRoot: !!(this as AuthStore | undefined)?.root,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     api.clearToken();
     api.setStaffUserRole(null);
     runInAction(() => {
