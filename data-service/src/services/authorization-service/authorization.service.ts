@@ -15,7 +15,7 @@ export class AuthorizationService {
 
         //const user = await this.userModel.findOne({ where: { login: login! }, include: [Role] });
 
-        if (! role) {
+        if (!role) {
             throw new UnauthorizedException("Роль пользователя не указаана");
         }
         if (!requiredRoles.includes(role)) {

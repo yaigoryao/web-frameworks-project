@@ -14,6 +14,7 @@ import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+
     constructor(private jwtService: JwtService,
         private configService: ConfigService,
         @InjectModel(User) private readonly userModel: typeof User) {
@@ -34,9 +35,10 @@ export class AuthGuard implements CanActivate {
 
             const decoded = jwt.verify(token, this.configService.get('JWT_PUBLIC_KEY')!, { algorithms: ['RS256'] }) as UserJwtData;
             const login = decoded.login;
-            const user = await this.userModel.findOne({ where: { login: login }, include: [Role] });
-            const role = user?.role.roleName;
-            
+            const role = decoded.role;
+            //const user = await this.userModel.findOne({ where: { login: login }, include: [Role] });
+            //const role = user?.role.roleName;
+
             request.login = login;
             request.role = role;
             // request.user = await this.userModel.findOne({
