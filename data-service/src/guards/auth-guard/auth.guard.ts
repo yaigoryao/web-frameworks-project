@@ -1,4 +1,4 @@
-import { User, UserJwtData } from '@monorepo/shared';
+import { Role, User, UserJwtData } from '@monorepo/shared';
 import {
     CanActivate,
     ExecutionContext,
@@ -33,8 +33,12 @@ export class AuthGuard implements CanActivate {
 
 
             const decoded = jwt.verify(token, this.configService.get('JWT_PUBLIC_KEY')!, { algorithms: ['RS256'] }) as UserJwtData;
-
-            request.login = decoded.login;
+            const login = decoded.login;
+            const user = await this.userModel.findOne({ where: { login: login }, include: [Role] });
+            const role = user?.role.roleName;
+            
+            request.login = login;
+            request.role = role;
             // request.user = await this.userModel.findOne({
             //     where: {
             //         login: decoded.login

@@ -10,15 +10,15 @@ export class AuthorizationService {
 
     }
 
-    public async authorizeUser(login: string | null, requiredRoles: string[]): Promise<boolean> {
+    public async authorizeUser(login: string | null, role: string | null, requiredRoles: string[]): Promise<boolean> {
         if (!login) throw new UnauthorizedException("Пользователь не найден");
 
-        const user = await this.userModel.findOne({ where: { login: login! }, include: [Role] });
+        //const user = await this.userModel.findOne({ where: { login: login! }, include: [Role] });
 
-        if (!user) {
-            throw new UnauthorizedException("Пользователь не найден");
+        if (! role) {
+            throw new UnauthorizedException("Роль пользователя не указаана");
         }
-        if (!requiredRoles.includes(user?.role?.roleName)) {
+        if (!requiredRoles.includes(role)) {
             throw new ForbiddenException("Недостаточно прав для выполнения данного действия");
         }
         return true;
