@@ -27,10 +27,11 @@ class ApiService {
   private authClient: AxiosInstance;
   private dataClient: AxiosInstance;
   private accessToken: string | null = null;
-  /** Роль из GET /customer/user (в JWT роли нет) */
+  /** Роль для staff-роутов (из JWT или из GET /customer/user как fallback) */
   private staffRoleName: string | null = null;
   private isRefreshing = false;
   private refreshSubscribers: ((token: string) => void)[] = [];
+  private refreshErrorSubscribers: ((error: unknown) => void)[] = [];
 
   constructor() {
     // Auth client for authentication endpoints
@@ -51,7 +52,11 @@ class ApiService {
 
     // Add token to data requests
     this.dataClient.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
+      async (config: InternalAxiosRequestConfig) => {
+        const method = (config.method ?? '').toLowerCase();
+        if (method === 'post' || method === 'put') {
+          await this.refreshBeforePost();
+        }
         if (this.accessToken && config.headers) {
           config.headers.Authorization = `Bearer ${this.accessToken}`;
         }
@@ -63,8 +68,18 @@ class ApiService {
     this.dataClient.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && originalRequest && !this.isRefreshing) {
+        const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          if (this.isRefreshing) {
+            const token = await this.waitForRefresh();
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return this.dataClient(originalRequest);
+          }
+
           this.isRefreshing = true;
           try {
             const refreshToken = localStorage.getItem('refreshToken');
@@ -72,14 +87,19 @@ class ApiService {
               const response = await this.refresh(refreshToken);
               this.isRefreshing = false;
               this.refreshSubscribers.forEach((cb) => cb(response.accessToken));
+              this.refreshErrorSubscribers = [];
               this.refreshSubscribers = [];
               if (originalRequest.headers) {
                 originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
               }
               return this.dataClient(originalRequest);
             }
+            throw new Error('Refresh token missing');
           } catch {
             this.isRefreshing = false;
+            this.refreshErrorSubscribers.forEach((cb) => cb(error));
+            this.refreshErrorSubscribers = [];
+            this.refreshSubscribers = [];
             this.clearToken();
             window.location.href = '/login';
             return Promise.reject(error);
@@ -102,6 +122,7 @@ class ApiService {
   setToken(token: string): void {
     this.accessToken = token;
     localStorage.setItem('accessToken', token);
+    this.syncRoleFromToken(token);
   }
 
   clearToken(): void {
@@ -141,7 +162,65 @@ class ApiService {
       refreshToken,
     });
     this.setToken(response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
     return response.data;
+  }
+
+  private async refreshBeforePost(): Promise<void> {
+    if (!this.accessToken) {
+      return;
+    }
+    if (this.isRefreshing) {
+      await this.waitForRefresh();
+      return;
+    }
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      return;
+    }
+    this.isRefreshing = true;
+    try {
+      const response = await this.refresh(refreshToken);
+      this.refreshSubscribers.forEach((cb) => cb(response.accessToken));
+      this.refreshErrorSubscribers = [];
+      this.refreshSubscribers = [];
+    } catch (error) {
+      this.refreshErrorSubscribers.forEach((cb) => cb(error));
+      this.refreshErrorSubscribers = [];
+      this.refreshSubscribers = [];
+      throw error;
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  private waitForRefresh(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.refreshSubscribers.push((token: string) => resolve(token));
+      this.refreshErrorSubscribers.push((error: unknown) => reject(error));
+    });
+  }
+
+  private syncRoleFromToken(token: string): void {
+    const payload = this.parseJwtPayload(token);
+    const roleFromToken = payload?.role ?? payload?.roleName;
+    if (typeof roleFromToken === 'string' && roleFromToken.trim()) {
+      this.staffRoleName = roleFromToken.toLowerCase();
+    }
+  }
+
+  private parseJwtPayload(token: string): Record<string, unknown> | null {
+    const [, payload] = token.split('.');
+    if (!payload) {
+      return null;
+    }
+    try {
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+      return JSON.parse(atob(padded)) as Record<string, unknown>;
+    } catch {
+      return null;
+    }
   }
 
   // Customer endpoints (data-service on port 3002)

@@ -29,6 +29,14 @@ export class CustomerUpdateUserRequest {
     @Type(() => String)
     password: string | null = null;
 
+    @ApiPropertyOptional({ description: 'Current password (required when changing password)', example: 'OldPassword123!', nullable: true })
+    @IsOptional()
+    @IsString()
+    @MinLength(6, { message: 'Current password must be at least 6 characters long' })
+    @MaxLength(100, { message: 'Current password must not exceed 100 characters' })
+    @Type(() => String)
+    oldPassword: string | null = null;
+
     @ApiPropertyOptional({ description: 'User last name', example: 'Doe', nullable: true })
     @IsOptional()
     @IsString()

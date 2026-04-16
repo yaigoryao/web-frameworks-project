@@ -13,6 +13,7 @@ export function ProfilePage() {
     phoneNumber: user?.phoneNumber || '',
   });
   const [password, setPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -42,11 +43,13 @@ export function ProfilePage() {
       
       if (password) {
         updateData.password = password;
+        updateData.oldPassword = oldPassword;
       }
       
       await api.updateUserInfo(updateData);
       setMessage('Профиль успешно обновлён!');
       setPassword('');
+      setOldPassword('');
     } catch (error) {
       setMessage('Ошибка при обновлении профиля');
     } finally {
@@ -121,6 +124,19 @@ export function ProfilePage() {
               value={formData.phoneNumber}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="oldPassword">Текущий пароль (обязательно при смене)</label>
+            <input
+              type="password"
+              id="oldPassword"
+              name="oldPassword"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Введите текущий пароль"
+              required={password.length > 0}
             />
           </div>
 

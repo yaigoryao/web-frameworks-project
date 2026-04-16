@@ -1,5 +1,5 @@
 import { ErrorBuilder, User, UserDto } from "@monorepo/shared";
-import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 //import { IGetUserInfoRequest } from "./models/get-user-info.request";
 import { MapperService } from "../../mapper-service/mapper.service";
@@ -8,6 +8,7 @@ import { CustomerUpdateUserRequest } from "@monorepo/shared";
 import { UserRepository, UserAddStatus, UserUpdateStatus } from "../../../repositoires/user-repository/user.repository";
 import { GetUserQuery } from "../../../repositoires/user-repository/queries/get-user.query";
 import { UpdateUserCommand } from "../../../repositoires/user-repository/commands/update-user.command";
+import bcrypt from 'bcrypt';
 //import { IUpdateUserInfoRequest } from "./models/update-user-info.request";
 
 @Injectable()
@@ -42,6 +43,25 @@ export class CustomerUserService {
         if (login !== updateInfoRequest?.login) {
             throw new ForbiddenException("Недостаточно прав для обновления информации другого пользователя");
         }
+
+        const newPassword = updateInfoRequest?.password?.trim();
+        if (newPassword) {
+            const oldPassword = updateInfoRequest?.oldPassword?.trim();
+            if (!oldPassword) {
+                throw new BadRequestException("Для смены пароля необходимо указать текущий пароль");
+            }
+
+            const user = await this.userRepository.getUser(new GetUserQuery({ login }));
+            if (!user) {
+                throw new NotFoundException("Пользователь не найден");
+            }
+
+            const passwordMatch = await bcrypt.compare(`${oldPassword}${user.salt}`, user.password);
+            if (!passwordMatch) {
+                throw new UnauthorizedException("Текущий пароль указан неверно");
+            }
+        }
+
         try {
             return await this.userRepository.updateUser(new UpdateUserCommand(updateInfoRequest));
         }

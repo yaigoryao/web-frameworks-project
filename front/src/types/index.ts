@@ -78,6 +78,7 @@ export interface CustomerUpdateUserRequest {
   patronymic: string | null;
   phoneNumber: string | null;
   password?: string | null;
+  oldPassword?: string | null;
 }
 
 export interface CustomerGetCarsRequest {

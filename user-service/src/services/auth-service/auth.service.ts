@@ -29,7 +29,7 @@ export class AuthService {
         const user: User | null = (await this.userModel.findOne({
             where: {
                 login: login
-            }
+            }, include: [Role]
         })) ?? null;
 
         if (user === null) throw new NotFoundException("Пользователь не найден");//errBuilder.addErrorMessage('Пользователь не найден');
@@ -58,7 +58,7 @@ export class AuthService {
         let user: User | null = (await this.userModel.findOne({
             where: {
                 login: login
-            }
+            }, include: [Role]
         })) ?? null;
 
         if (user === null) throw new NotFoundException("Пользователь не найден!");//errBuilder.addErrorMessage('Пользователь не найден');
@@ -142,7 +142,7 @@ export class AuthService {
             //private_key = private_key.replace(/\\n/g, '\n');
 
             return {
-                accessToken: jwt.sign({ login: user!.login } as UserJwtData, private_key, AuthService.jwtOptions),
+                accessToken: jwt.sign({ login: user!.login, role: user!.role?.roleName } as UserJwtData, private_key, AuthService.jwtOptions),
                 refreshToken: user.refreshToken
             };
         }
