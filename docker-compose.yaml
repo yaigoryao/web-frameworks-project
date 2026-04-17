@@ -130,6 +130,8 @@ services:
     build:
       context: .
       dockerfile: apps/mfe-orders/Dockerfile
+      args:
+        WEB_PUBLIC_PATH: /mfe-orders/
     container_name: mfe_orders_lab4
     ports:
       - "5003:80"
@@ -141,6 +143,8 @@ services:
     build:
       context: .
       dockerfile: apps/mfe-cars/Dockerfile
+      args:
+        WEB_PUBLIC_PATH: /mfe-cars/
     container_name: mfe_cars_lab4
     ports:
       - "5004:80"

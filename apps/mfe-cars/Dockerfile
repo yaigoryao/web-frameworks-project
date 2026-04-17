@@ -8,7 +8,8 @@ COPY . .
 RUN npm ci --include=dev
 
 ENV NODE_ENV=production
-ENV WEB_PUBLIC_PATH=/
+ARG WEB_PUBLIC_PATH=/
+ENV WEB_PUBLIC_PATH=$WEB_PUBLIC_PATH
 
 ARG AUTH_API_BASE_URL=http://localhost:3001
 ARG DATA_API_BASE_URL=http://localhost:3002
