@@ -19,7 +19,6 @@ import {
   StaffUpdateUserRequest,
 } from '../types';
 
-/** Локальная разработка: прямой доступ к сервисам. Docker/nginx: относительные префиксы `/api/auth` и `/api/data`. */
 const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE ?? 'http://localhost:3001';
 const DATA_API_BASE_URL = import.meta.env.VITE_DATA_API_BASE ?? 'http://localhost:3002';
 
@@ -27,13 +26,11 @@ class ApiService {
   private authClient: AxiosInstance;
   private dataClient: AxiosInstance;
   private accessToken: string | null = null;
-  /** Роль из GET /customer/user (в JWT роли нет) */
   private staffRoleName: string | null = null;
   private isRefreshing = false;
   private refreshSubscribers: ((token: string) => void)[] = [];
 
   constructor() {
-    // Auth client for authentication endpoints
     this.authClient = axios.create({
       baseURL: AUTH_API_BASE_URL,
       headers: {
@@ -41,7 +38,6 @@ class ApiService {
       },
     });
 
-    // Data client for all other API endpoints
     this.dataClient = axios.create({
       baseURL: DATA_API_BASE_URL,
       headers: {
@@ -49,7 +45,6 @@ class ApiService {
       },
     });
 
-    // Add token to data requests
     this.dataClient.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (this.accessToken && config.headers) {
@@ -59,7 +54,6 @@ class ApiService {
       }
     );
 
-    // Handle 401 and token refresh
     this.dataClient.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
