@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
@@ -18,6 +18,46 @@ const RemoteCarsPage = React.lazy(() => import('mfeCars/CarsPage'));
 
 function MfFallback() {
   return <div className="loading">Загрузка модуля...</div>;
+}
+
+function MfUnavailablePage({ title }: { title: string }) {
+  return (
+    <div className="mf-unavailable">
+      <h2>{title} временно недоступна</h2>
+      <p>Микрофронт не отвечает. Попробуйте открыть страницу позже.</p>
+      <Link to="/dashboard" className="mf-unavailable-link">
+        Перейти на дашборд
+      </Link>
+    </div>
+  );
+}
+
+class MfErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallbackTitle: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallbackTitle: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps: { fallbackTitle: string }) {
+    if (prevProps.fallbackTitle !== this.props.fallbackTitle && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <MfUnavailablePage title={this.props.fallbackTitle} />;
+    }
+
+    return this.props.children;
+  }
 }
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
@@ -97,9 +137,11 @@ function AppRoutes() {
           path="/cars"
           element={
             <ProtectedRoute>
-              <Suspense fallback={<MfFallback />}>
-                <RemoteCarsPage />
-              </Suspense>
+              <MfErrorBoundary fallbackTitle="Страница машин">
+                <Suspense fallback={<MfFallback />}>
+                  <RemoteCarsPage />
+                </Suspense>
+              </MfErrorBoundary>
             </ProtectedRoute>
           }
         />
@@ -107,9 +149,11 @@ function AppRoutes() {
           path="/orders"
           element={
             <ProtectedRoute>
-              <Suspense fallback={<MfFallback />}>
-                <RemoteOrdersPage />
-              </Suspense>
+              <MfErrorBoundary fallbackTitle="Страница заказов">
+                <Suspense fallback={<MfFallback />}>
+                  <RemoteOrdersPage />
+                </Suspense>
+              </MfErrorBoundary>
             </ProtectedRoute>
           }
         />

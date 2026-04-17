@@ -10,16 +10,16 @@ RUN npm ci --include=dev
 ENV NODE_ENV=production
 ENV AUTH_API_BASE_URL=/api/auth
 ENV DATA_API_BASE_URL=/api/data
+ARG MFE_ORDERS_ORIGIN=/mfe-orders
+ARG MFE_CARS_ORIGIN=/mfe-cars
+ENV MFE_ORDERS_ORIGIN=$MFE_ORDERS_ORIGIN
+ENV MFE_CARS_ORIGIN=$MFE_CARS_ORIGIN
 
-RUN WEB_PUBLIC_PATH=/mfe-orders/ npm run build --workspace=mfeOrders
-RUN WEB_PUBLIC_PATH=/mfe-cars/ npm run build --workspace=mfeCars
 RUN npm run build --workspace=host
 
 FROM nginx:1.25-alpine
 
 COPY --from=builder /repo/apps/host/dist /usr/share/nginx/html
-COPY --from=builder /repo/apps/mfe-orders/dist /usr/share/nginx/html/mfe-orders
-COPY --from=builder /repo/apps/mfe-cars/dist /usr/share/nginx/html/mfe-cars
 COPY apps/host/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

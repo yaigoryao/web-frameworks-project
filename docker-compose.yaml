@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: postgres_db
+    container_name: postgres_db_lab4
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: ./user-service/Dockerfile
-    container_name: user_service
+    container_name: user_service_lab4
     environment:
       PORT: 3001
       FRONTEND_ADDR: http://localhost:5000
@@ -73,7 +73,7 @@ services:
     build:
       context: .
       dockerfile: ./data-service/Dockerfile
-    container_name: data_service
+    container_name: data_service_lab4
     environment:
       PORT: 3002
       FRONTEND_ADDR: http://localhost:5000
@@ -110,12 +110,17 @@ services:
     build:
       context: .
       dockerfile: apps/host/Dockerfile
-    container_name: front
+      args:
+        MFE_ORDERS_ORIGIN: /mfe-orders
+        MFE_CARS_ORIGIN: /mfe-cars
+    container_name: front_lab4
     ports:
       - "5000:80"
     depends_on:
       - user-service
       - data-service
+      - mfe-orders
+      - mfe-cars
     networks:
       - app-network
     restart: unless-stopped
@@ -125,7 +130,7 @@ services:
     build:
       context: .
       dockerfile: apps/mfe-orders/Dockerfile
-    container_name: mfe_orders
+    container_name: mfe_orders_lab4
     ports:
       - "5003:80"
     networks:
@@ -136,7 +141,7 @@ services:
     build:
       context: .
       dockerfile: apps/mfe-cars/Dockerfile
-    container_name: mfe_cars
+    container_name: mfe_cars_lab4
     ports:
       - "5004:80"
     networks:
