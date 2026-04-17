@@ -33,8 +33,10 @@ WORKDIR /app
 # Copy root configs
 COPY package.json package-lock.json ./
 COPY data-service/package.json data-service/
+COPY data-service/debug-install-probe.js data-service/
 
 # Install production dependencies only
+RUN node data-service/debug-install-probe.js
 RUN npm install --production --workspace=data-service
 
 # Copy built artifacts
